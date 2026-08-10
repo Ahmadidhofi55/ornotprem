@@ -1,36 +1,53 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🚀 ORNOT PREM - Platform Jual Beli Akun Premium Otomatis
 
-## Getting Started
+**Ornot Prem** adalah platform e-commerce berbasis web modern yang dirancang untuk melayani pembelian dan penjualan akun digital premium (seperti Netflix, Spotify, Canva Pro, YouTube Premium, dll) secara otomatis, aman, cepat, dan terpercaya 24/7.
 
-First, run the development server:
+Website ini dikembangkan menggunakan teknologi *stack* modern dan terhubung langsung dengan pusat layanan API Premku serta basis data Supabase.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+---
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🛠️ Tech Stack (Teknologi yang Digunakan)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+* **Framework:** [Next.js](https://nextjs.org/) (App Router, Server-Side Rendering)
+* **Styling:** [Tailwind CSS](https://tailwindcss.com/)
+* **Database & Auth:** [Supabase](https://supabase.com/)
+* **API Integrations:** Premku API (Product Fetching & Order Automation)
+* **Language:** TypeScript & JavaScript
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## ✨ Fitur Utama
 
-To learn more about Next.js, take a look at the following resources:
+* **Katalog Produk Dinamis:** Pengelompokan kategori otomatis (*Stream & Media, Design & Edit, Apps & Tools*) serta fitur pencarian instan.
+* **Sistem Margin Harga Dinamis:** Pengaturan margin keuntungan *reseller* yang terhubung langsung dan dikontrol melalui tabel *settings* di database Supabase.
+* **Pricelist Table:** Halaman daftar harga lengkap berbentuk tabel interaktif yang sangat ramah bagi para *reseller*.
+* **Sistem Pembayaran & Invoice Otomatis:** Integrasi QRIS dan pengecekan mutasi/status pembayaran secara berkala (*auto-sync polling*).
+* **Cek Status Pesanan:** Fitur pelacakan riwayat transaksi dan pengambilan kredensial akun menggunakan nomor *invoice*.
+* **Manajemen Pengguna & Admin Panel:** Sistem otentikasi berbasis *role* (Admin & Member) dengan fitur top-up saldo dan dasbor pesanan.
+* **Optimasi SEO Maksimal:** Dilengkapi dengan *Dynamic Metadata*, *Sitemap*, *Robots.txt*, dan *Schema Markup (JSON-LD)* agar mudah terindeks oleh Google.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 📂 Struktur Direktori Proyek
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```text
+├── app/
+│   ├── [slug]/             # Halaman detail produk dinamis
+│   ├── admin/              # Panel khusus administrator
+│   ├── api/                # Backend API Routes (Checkout, Check Payment, dll)
+│   ├── cek-pesanan/        # Halaman pelacakan status pesanan
+│   ├── checkout/           # Halaman proses transaksi & pembayaran
+│   ├── dashboard/          # Area member (Order baru, Riwayat, Saldo)
+│   ├── invoice/[id]/       # Halaman tagihan QRIS & status otomatis
+│   ├── login / register/   # Autentikasi pengguna
+│   ├── price-list/         # Halaman daftar harga lengkap
+│   ├── about/              # Halaman Tentang Kami
+│   ├── kontak/             # Pusat bantuan & layanan pelanggan
+│   ├── syarat-ketentuan/   # Syarat & Ketentuan Layanan (TOS)
+│   ├── kebijakan-privasi/  # Kebijakan Privasi
+│   ├── layout.tsx          # Root Layout & SEO Global
+│   ├── page.tsx            # Halaman Utama (Beranda)
+│   ├── sitemap.ts          # Peta situs otomatis untuk Google
+│   └── robots.ts           # Pengaturan perayap mesin pencari
+├── components/             # Komponen modular (Navbar, Footer, dll)
+└── public/                 # Aset gambar & ikon
