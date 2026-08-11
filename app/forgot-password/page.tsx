@@ -24,97 +24,86 @@ export default function ForgotPasswordPage() {
     try {
       const cleanName = fullName.trim();
 
-      // 1. Cari email berdasarkan full_name di tabel profiles
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('email')
+      // 1. Cek apakah username / full_name ada di tabel users
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('id, full_name, whatsapp_number')
         .ilike('full_name', cleanName)
         .maybeSingle();
 
-      if (profileError || !profileData || !profileData.email) {
-        throw new Error('Full Name tidak ditemukan di database.');
+      if (userError) throw new Error('Kesalahan database.');
+      if (!userData) {
+        throw new Error('Username / Full Name tidak ditemukan di database.');
       }
 
-      // 2. Kirim email pemulihan sandi (Supabase Auth mengirim link reset)
-      const { error: resetError } = await supabase.auth.resetPasswordForEmail(profileData.email, {
-        redirectTo: `${window.location.origin}/update-password`,
-      });
+      // 2. Catat permintaan reset ke tabel 'password_resets' agar Admin bisa lihat
+      await supabase.from('password_resets').insert([{
+        user_id: userData.id,
+        full_name: userData.full_name,
+        email: userData.whatsapp_number || 'Tidak ada WA', // Menggunakan kolom email untuk menyimpan info kontak
+        status: 'PENDING'
+      }]);
 
-      if (resetError) {
-        throw new Error(resetError.message);
-      }
-
-      setMessage('Instruksi pemulihan password berhasil dikirim. Silakan cek email/kontak terkait.');
+      setMessage('Permintaan reset password berhasil dikirim ke Admin. Silakan hubungi Admin via WhatsApp untuk memperbarui sandi Anda.');
     } catch (err: unknown) {
-      if (err instanceof Error) {
-        setErrorMsg(err.message);
-      } else {
-        setErrorMsg('Terjadi kesalahan saat memproses permintaan.');
-      }
+      setErrorMsg(err instanceof Error ? err.message : 'Terjadi kesalahan sistem.');
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#0f172a] flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <h2 className="text-center text-3xl font-extrabold tracking-tight text-gray-900">
-          Reset Password
-        </h2>
-        <p className="mt-2 text-center text-sm text-gray-600">
-          Masukkan Username akun Anda untuk memulihkan akses.
-        </p>
+        <h2 className="text-center text-3xl font-black text-white tracking-tight">Reset Password</h2>
+        <p className="mt-2 text-center text-sm text-slate-400">Masukkan Username Anda untuk meminta pemulihan akses.</p>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md px-4">
-        <div className="bg-white py-8 px-6 shadow-xl rounded-3xl border border-gray-100 sm:px-10">
+        <div className="bg-[#1e293b] py-8 px-6 shadow-2xl rounded-3xl border border-slate-700 sm:px-10">
           
-          {errorMsg && (
-            <div className="mb-4 p-4 bg-rose-50 border border-rose-200 text-rose-600 text-sm rounded-xl font-medium">
-              {errorMsg}
-            </div>
-          )}
-
+          {errorMsg && <div className="mb-4 p-4 bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm rounded-xl font-medium">{errorMsg}</div>}
           {message && (
-            <div className="mb-4 p-4 bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm rounded-xl font-medium">
-              {message}
+            <div className="mb-4 p-4 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm rounded-xl font-medium space-y-3">
+              <p>{message}</p>
+              <a 
+                href={`https://wa.me/6285724486120?text=Halo%20Admin,%20saya%20lupa%20password%20untuk%20akun%20dengan%20nama:%20${encodeURIComponent(fullName)}`} 
+                target="_blank" 
+                rel="noreferrer"
+                className="block text-center bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 px-4 rounded-xl transition-colors shadow-md"
+              >
+                Konfirmasi ke WhatsApp Admin ↗
+              </a>
             </div>
           )}
 
           <form className="space-y-6" onSubmit={handleResetPassword}>
             <div>
-              <label className="block text-sm font-bold text-gray-700">Username</label>
-              <div className="mt-1">
-                <input
-                  type="text"
-                  required
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  placeholder="Masukkan Username Anda"
-                  className="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-gray-900"
-                />
-              </div>
+              <label className="block text-sm font-bold text-slate-300 mb-2">Username / Full Name</label>
+              <input
+                type="text"
+                required
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                placeholder="Masukkan Nama Lengkap"
+                className="block w-full px-4 py-3 bg-[#0f172a] border border-slate-700 rounded-xl text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-all"
+              />
             </div>
 
-            <div>
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-full shadow-md text-sm font-extrabold text-white bg-gradient-to-r from-indigo-600 to-purple-700 hover:from-indigo-500 hover:to-purple-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all disabled:opacity-50"
-              >
-                {isLoading ? 'Memproses...' : 'Kirim Instruksi Reset'}
-              </button>
-            </div>
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full py-3 px-4 rounded-xl shadow-lg text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-500 transition-all disabled:opacity-50"
+            >
+              {isLoading ? 'Memproses...' : 'Kirim Permintaan ke Admin'}
+            </button>
           </form>
 
-          {/* Kembali ke Login */}
-          <div className="mt-6 pt-6 border-t border-gray-100 text-center">
-            <Link href="/login" className="text-sm font-bold text-indigo-600 hover:text-indigo-500 underline">
-              ← Kembali ke halaman Login
+          <div className="mt-6 text-center">
+            <Link href="/login" className="text-sm font-bold text-indigo-400 hover:text-indigo-300">
+              ← Kembali ke Login
             </Link>
           </div>
-
         </div>
       </div>
     </div>

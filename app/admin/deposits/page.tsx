@@ -150,15 +150,22 @@ export default function DepositsCRUDPage() {
   };
 
   return (
-    <>
-      <div className="mb-6 flex justify-between items-end">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full">
+      {/* HEADER SECTION */}
+      <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-[#1e293b] p-5 sm:p-6 rounded-2xl border border-slate-800 shadow-lg">
         <div>
-          <h1 className="text-2xl font-bold text-white">Deposit Transactions</h1>
-          <p className="text-sm text-slate-400 mt-1">Monitor and manage user balance top-ups.</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2">
+            <svg className="w-5 h-5 sm:w-6 sm:h-6 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            Deposit Transactions
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-400 mt-1">Monitor and manage user balance top-ups.</p>
         </div>
-        <button onClick={fetchDeposits} className="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-xl text-sm font-bold border border-slate-700 transition-colors flex items-center gap-2">
+        <button 
+          onClick={fetchDeposits} 
+          className="bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl text-sm font-bold transition-colors flex items-center gap-2 shrink-0 w-full sm:w-auto justify-center"
+        >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-          Refresh
+          Refresh Data
         </button>
       </div>
 
@@ -168,56 +175,17 @@ export default function DepositsCRUDPage() {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm whitespace-nowrap">
-              <thead className="bg-slate-800/30 text-slate-400 border-b border-slate-700/50">
-                <tr>
-                  <th className="px-6 py-4 font-medium">Invoice</th>
-                  <th className="px-6 py-4 font-medium">Customer</th>
-                  <th className="px-6 py-4 font-medium">Total Transfer</th>
-                  <th className="px-6 py-4 font-medium">Channel</th>
-                  <th className="px-6 py-4 font-medium">Status</th>
-                  <th className="px-6 py-4 font-medium text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-800/50">
+              <thead className="bg-slate-900/40 text-slate-400 border-b border-slate-700/50 uppercase tracking-wider text-[11px] font-bold"><tr><th className="px-4 sm:px-6 py-4">Invoice</th><th className="px-4 sm:px-6 py-4">Customer</th><th className="px-4 sm:px-6 py-4">Total Transfer</th><th className="px-4 sm:px-6 py-4">Channel</th><th className="px-4 sm:px-6 py-4">Status</th><th className="px-4 sm:px-6 py-4 text-right">Actions</th></tr></thead>
+              <tbody className="divide-y divide-slate-800/50 text-slate-300">
                 {deposits.length === 0 ? (
-                  <tr><td colSpan={6} className="px-6 py-8 text-center text-slate-500">No deposits found.</td></tr>
+                  <tr><td colSpan={6} className="px-4 sm:px-6 py-12 text-center text-slate-500">No deposits found.</td></tr>
                 ) : (
                   deposits.map((dep) => {
                     const isSuccess = dep.status === 'SUCCESS';
                     const isPending = dep.status === 'PENDING';
 
                     return (
-                      <tr key={dep.id} className="hover:bg-slate-800/20 transition-colors">
-                        <td className="px-6 py-4 font-bold text-indigo-400">{dep.invoice_number}</td>
-                        <td className="px-6 py-4 text-slate-300">{dep.users?.full_name || 'Unknown'}</td>
-                        <td className="px-6 py-4 font-bold text-emerald-400">Rp {Number(dep.total_transfer || 0).toLocaleString('id-ID')}</td>
-                        <td className="px-6 py-4 text-slate-400">{dep.payment_channel}</td>
-                        <td className="px-6 py-4">
-                          <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border ${
-                            isSuccess ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 
-                            isPending ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 
-                            'bg-rose-500/10 text-rose-400 border-rose-500/20'
-                          }`}>
-                            {dep.status}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                          <div className="flex justify-end gap-2">
-                            {/* BTN VIEW */}
-                            <button onClick={() => openViewModal(dep)} className="p-2 bg-slate-700/50 text-indigo-400 hover:bg-indigo-500/20 rounded-lg transition-colors" title="View Details">
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-                            </button>
-                            {/* BTN EDIT STATUS */}
-                            <button onClick={() => openEditModal(dep)} className="p-2 bg-slate-700/50 text-amber-400 hover:bg-amber-500/20 rounded-lg transition-colors" title="Edit Status">
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                            </button>
-                            {/* BTN DELETE */}
-                            <button onClick={() => openDeleteModal(dep.id, dep.invoice_number)} className="p-2 bg-slate-700/50 text-rose-400 hover:bg-rose-500/20 rounded-lg transition-colors" title="Delete Record">
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
+                      <tr key={dep.id} className="hover:bg-slate-800/40 transition-colors"><td className="px-4 sm:px-6 py-4 font-bold font-mono text-indigo-400">{dep.invoice_number}</td><td className="px-4 sm:px-6 py-4 font-medium text-slate-200">{dep.users?.full_name || 'Unknown'}</td><td className="px-4 sm:px-6 py-4 font-bold text-emerald-400">Rp {Number(dep.total_transfer || 0).toLocaleString('id-ID')}</td><td className="px-4 sm:px-6 py-4 text-slate-400">{dep.payment_channel}</td><td className="px-4 sm:px-6 py-4"><span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border ${isSuccess ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : isPending ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-rose-500/10 text-rose-400 border-rose-500/20'}`}>{dep.status}</span></td><td className="px-4 sm:px-6 py-4 text-right"><div className="flex justify-end gap-2"><button onClick={() => openViewModal(dep)} className="p-2 bg-slate-700/50 text-indigo-400 hover:bg-indigo-500/20 rounded-lg transition-colors" title="View Details"><svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg></button><button onClick={() => openEditModal(dep)} className="p-2 bg-slate-700/50 text-amber-400 hover:bg-amber-500/20 rounded-lg transition-colors" title="Edit Status"><svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg></button><button onClick={() => openDeleteModal(dep.id, dep.invoice_number)} className="p-2 bg-slate-700/50 text-rose-400 hover:bg-rose-500/20 rounded-lg transition-colors" title="Delete Record"><svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button></div></td></tr>
                     );
                   })
                 )}
@@ -359,6 +327,6 @@ export default function DepositsCRUDPage() {
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 }

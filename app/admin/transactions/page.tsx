@@ -124,7 +124,7 @@ export default function TransactionsCRUDPage() {
           updated_at: new Date()
         })
         .eq('id', editingTx.id)
-        .select(); // Memastikan pengecekan jika RLS memblokir update
+        .select();
 
       if (error) throw error;
       if (!data || data.length === 0) {
@@ -175,19 +175,19 @@ export default function TransactionsCRUDPage() {
   };
 
   return (
-    <>
+    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full">
       {/* HEADER SECTION */}
-      <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-[#1e293b] p-6 rounded-2xl border border-slate-800 shadow-lg">
+      <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-[#1e293b] p-5 sm:p-6 rounded-2xl border border-slate-800 shadow-lg">
         <div>
-          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-            <svg className="w-6 h-6 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+          <h1 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2">
+            <svg className="w-5 h-5 sm:w-6 sm:h-6 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
             Order Transactions
           </h1>
-          <p className="text-sm text-slate-400 mt-1">Monitor histori pesanan produk premium pengguna.</p>
+          <p className="text-xs sm:text-sm text-slate-400 mt-1">Monitor histori pesanan produk premium pengguna.</p>
         </div>
         <button 
           onClick={() => { setIsLoading(true); fetchTransactions(); }} 
-          className="bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 px-5 py-2.5 rounded-xl text-sm font-bold transition-colors flex items-center gap-2 shrink-0"
+          className="bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl text-sm font-bold transition-colors flex items-center gap-2 shrink-0 w-full sm:w-auto justify-center"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
           Refresh Data
@@ -208,65 +208,17 @@ export default function TransactionsCRUDPage() {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm whitespace-nowrap">
-              <thead className="bg-slate-900/40 text-slate-400 border-b border-slate-700/50 uppercase tracking-wider text-[11px] font-bold">
-                <tr>
-                  <th className="px-6 py-4">Invoice</th>
-                  <th className="px-6 py-4">Produk</th>
-                  <th className="px-6 py-4">Customer WA</th>
-                  <th className="px-6 py-4">Laba (Margin)</th>
-                  <th className="px-6 py-4">Payment</th>
-                  <th className="px-6 py-4">Delivery</th>
-                  <th className="px-6 py-4 text-right">Actions</th>
-                </tr>
-              </thead>
+              <thead className="bg-slate-900/40 text-slate-400 border-b border-slate-700/50 uppercase tracking-wider text-[11px] font-bold"><tr><th className="px-4 sm:px-6 py-4">Invoice</th><th className="px-4 sm:px-6 py-4">Produk</th><th className="px-4 sm:px-6 py-4">Customer WA</th><th className="px-4 sm:px-6 py-4">Laba (Margin)</th><th className="px-4 sm:px-6 py-4">Payment</th><th className="px-4 sm:px-6 py-4">Delivery</th><th className="px-4 sm:px-6 py-4 text-right">Actions</th></tr></thead>
               <tbody className="divide-y divide-slate-800/50 text-slate-300">
                 {transactions.length === 0 ? (
-                  <tr><td colSpan={7} className="px-6 py-12 text-center text-slate-500">Belum ada transaksi tercatat.</td></tr>
+                  <tr><td colSpan={7} className="px-4 sm:px-6 py-12 text-center text-slate-500">Belum ada transaksi tercatat.</td></tr>
                 ) : (
                   transactions.map((tx) => {
                     const isPaid = tx.payment_status === 'PAID' || tx.payment_status === 'SUCCESS';
                     const isDelivered = tx.delivery_status === 'SUCCESS';
 
                     return (
-                      <tr key={tx.id} className="hover:bg-slate-800/40 transition-colors">
-                        <td className="px-6 py-4 font-mono font-bold text-indigo-400">{tx.invoice_number}</td>
-                        <td className="px-6 py-4 font-medium text-slate-200">{tx.product_name}</td>
-                        <td className="px-6 py-4 text-slate-400">{tx.customer_wa}</td>
-                        <td className="px-6 py-4 font-bold text-emerald-400">+Rp {Number(tx.margin || 0).toLocaleString('id-ID')}</td>
-                        
-                        <td className="px-6 py-4">
-                          <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border ${
-                            isPaid ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
-                          }`}>
-                            {tx.payment_status}
-                          </span>
-                        </td>
-                        
-                        <td className="px-6 py-4">
-                          <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border ${
-                            isDelivered ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' : 'bg-slate-700/50 text-slate-400 border-slate-700'
-                          }`}>
-                            {tx.delivery_status}
-                          </span>
-                        </td>
-                        
-                        <td className="px-6 py-4 text-right">
-                          <div className="flex justify-end gap-2">
-                            {/* BTN VIEW */}
-                            <button onClick={() => openViewModal(tx)} className="p-2 bg-slate-700/50 text-indigo-400 hover:bg-indigo-500/20 rounded-lg transition-colors" title="Lihat Detail">
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-                            </button>
-                            {/* BTN EDIT */}
-                            <button onClick={() => openEditModal(tx)} className="p-2 bg-slate-700/50 text-amber-400 hover:bg-amber-500/20 rounded-lg transition-colors" title="Edit Status">
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                            </button>
-                            {/* BTN DELETE */}
-                            <button onClick={() => openDeleteModal(tx.id, tx.invoice_number)} className="p-2 bg-slate-700/50 text-rose-400 hover:bg-rose-500/20 rounded-lg transition-colors" title="Hapus Transaksi">
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
+                      <tr key={tx.id} className="hover:bg-slate-800/40 transition-colors"><td className="px-4 sm:px-6 py-4 font-mono font-bold text-indigo-400">{tx.invoice_number}</td><td className="px-4 sm:px-6 py-4 font-medium text-slate-200">{tx.product_name}</td><td className="px-4 sm:px-6 py-4 text-slate-400">{tx.customer_wa}</td><td className="px-4 sm:px-6 py-4 font-bold text-emerald-400">+Rp {Number(tx.margin || 0).toLocaleString('id-ID')}</td><td className="px-4 sm:px-6 py-4"><span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border ${isPaid ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border-amber-500/20'}`}>{tx.payment_status}</span></td><td className="px-4 sm:px-6 py-4"><span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border ${isDelivered ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' : 'bg-slate-700/50 text-slate-400 border-slate-700'}`}>{tx.delivery_status}</span></td><td className="px-4 sm:px-6 py-4 text-right"><div className="flex justify-end gap-2"><button onClick={() => openViewModal(tx)} className="p-2 bg-slate-700/50 text-indigo-400 hover:bg-indigo-500/20 rounded-lg transition-colors" title="Lihat Detail"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg></button><button onClick={() => openEditModal(tx)} className="p-2 bg-slate-700/50 text-amber-400 hover:bg-amber-500/20 rounded-lg transition-colors" title="Edit Status"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg></button><button onClick={() => openDeleteModal(tx.id, tx.invoice_number)} className="p-2 bg-slate-700/50 text-rose-400 hover:bg-rose-500/20 rounded-lg transition-colors" title="Hapus Transaksi"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button></div></td></tr>
                     );
                   })
                 )}
@@ -283,7 +235,7 @@ export default function TransactionsCRUDPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4 animate-in fade-in duration-200">
           <div className="bg-[#1e293b] border border-slate-700 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden">
             <div className="px-6 py-4 border-b border-slate-800 bg-slate-900/30 flex justify-between items-center">
-              <h3 className="text-lg font-bold text-white">Detail Transaksi</h3>
+              <h3 className="text-lg font-bold text-white">Transaction Details</h3>
               <button onClick={() => setIsViewModalOpen(false)} className="text-slate-400 hover:text-white transition-colors">
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
@@ -298,37 +250,37 @@ export default function TransactionsCRUDPage() {
                 <span className="font-semibold text-white">{selectedTx.product_name}</span>
               </div>
               <div className="flex justify-between border-b border-slate-800 pb-2">
-                <span className="text-slate-400">WhatsApp Pelanggan</span>
+                <span className="text-slate-400">WhatsApp Customer</span>
                 <span className="text-slate-200">{selectedTx.customer_wa}</span>
               </div>
               <div className="flex justify-between border-b border-slate-800 pb-2">
-                <span className="text-slate-400">Harga Modal Dasar</span>
+                <span className="text-slate-400">Base Cost Price</span>
                 <span className="text-slate-200">Rp {Number(selectedTx.base_price).toLocaleString('id-ID')}</span>
               </div>
               <div className="flex justify-between border-b border-slate-800 pb-2">
-                <span className="text-slate-400">Keuntungan (Margin)</span>
+                <span className="text-slate-400">Profit (Margin)</span>
                 <span className="font-bold text-emerald-400">+Rp {Number(selectedTx.margin).toLocaleString('id-ID')}</span>
               </div>
               <div className="flex justify-between border-b border-slate-800 pb-2">
-                <span className="text-slate-400">Total Harga Jual</span>
+                <span className="text-slate-400">Total Selling Price</span>
                 <span className="font-bold text-white text-base">Rp {Number(selectedTx.total_price).toLocaleString('id-ID')}</span>
               </div>
               <div className="flex justify-between border-b border-slate-800 pb-2">
-                <span className="text-slate-400">Status Pembayaran</span>
+                <span className="text-slate-400">Payment Status</span>
                 <span className="font-bold text-amber-400">{selectedTx.payment_status}</span>
               </div>
               <div className="flex justify-between border-b border-slate-800 pb-2">
-                <span className="text-slate-400">Status Pengiriman</span>
+                <span className="text-slate-400">Delivery Status</span>
                 <span className="font-bold text-blue-400">{selectedTx.delivery_status}</span>
               </div>
               <div className="flex justify-between border-b border-slate-800 pb-2">
-                <span className="text-slate-400">Tanggal Dibuat</span>
+                <span className="text-slate-400">Created Date</span>
                 <span className="text-slate-200">{new Date(selectedTx.created_at).toLocaleString('id-ID')}</span>
               </div>
             </div>
             <div className="px-6 py-4 bg-slate-900/30 flex justify-end">
               <button onClick={() => setIsViewModalOpen(false)} className="px-5 py-2 rounded-xl text-sm font-bold text-white bg-slate-700 hover:bg-slate-600 transition-colors">
-                Tutup
+                Close
               </button>
             </div>
           </div>
@@ -343,7 +295,7 @@ export default function TransactionsCRUDPage() {
           <div className="bg-[#1e293b] border border-slate-700 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden">
             
             <div className="px-6 py-4 border-b border-slate-800 bg-slate-900/30 flex justify-between items-center">
-              <h3 className="text-lg font-bold text-white">Update Status Transaksi</h3>
+              <h3 className="text-lg font-bold text-white">Update Transaction Status</h3>
               <button onClick={() => setIsEditModalOpen(false)} className="text-slate-400 hover:text-white transition-colors">
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
@@ -384,10 +336,10 @@ export default function TransactionsCRUDPage() {
               
               <div className="flex justify-end gap-3">
                 <button type="button" onClick={() => setIsEditModalOpen(false)} className="px-5 py-2.5 rounded-xl text-sm font-bold text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">
-                  Batal
+                  Cancel
                 </button>
                 <button type="submit" disabled={isUpdating} className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg transition-all">
-                  {isUpdating ? 'Menyimpan...' : 'Simpan Perubahan'}
+                  {isUpdating ? 'Saving...' : 'Save Changes'}
                 </button>
               </div>
             </form>
@@ -408,9 +360,9 @@ export default function TransactionsCRUDPage() {
               </svg>
             </div>
             
-            <h3 className="text-xl font-bold text-white mb-2">Hapus Transaksi?</h3>
+            <h3 className="text-xl font-bold text-white mb-2">Delete Transaction?</h3>
             <p className="text-sm text-slate-400 mb-6">
-              Hapus Invoice <strong className="text-white">{txToDelete.invoice}</strong> dari database? Data yang dihapus tidak bisa dikembalikan.
+              Delete Invoice <strong className="text-white">{txToDelete.invoice}</strong> from the database? Deleted data cannot be recovered.
             </p>
             
             <div className="flex gap-3">
@@ -418,19 +370,19 @@ export default function TransactionsCRUDPage() {
                 onClick={() => setIsDeleteModalOpen(false)} 
                 className="flex-1 px-4 py-2.5 rounded-xl text-sm font-bold text-slate-300 bg-slate-800 hover:bg-slate-700 hover:text-white transition-colors border border-slate-700"
               >
-                Batal
+                Cancel
               </button>
               <button 
                 onClick={confirmDelete} 
                 className="flex-1 bg-rose-600 hover:bg-rose-700 text-white px-4 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-rose-500/20 transition-all border border-rose-600"
               >
-                Ya, Hapus
+                Yes, Delete
               </button>
             </div>
           </div>
         </div>
       )}
 
-    </>
+    </div>
   );
 }
