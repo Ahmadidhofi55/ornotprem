@@ -138,7 +138,7 @@ export default function AdminDashboardPage() {
         </div>
       </div>
 
-      {/* --- TOP 6 STAT CARDS (DIKEMBALIKAN KE FORMAT ASLI DENGAN TAMBAHAN PENDING DEPOSITS) --- */}
+      {/* --- TOP 6 STAT CARDS (KEMBALI KE 6 KOLOM DENGAN PENDING DEPOSITS) --- */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 sm:gap-6">
         
         {/* Revenue */}
@@ -249,7 +249,7 @@ export default function AdminDashboardPage() {
                   <Tooltip 
                     contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '8px', color: '#f8fafc' }}
                     itemStyle={{ color: '#818cf8' }}
-                    formatter={(value: number | string) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(Number(value || 0))}
+                    formatter={(value) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(Number(value || 0))}
                   />
                   <Line type="monotone" dataKey="Revenue" stroke="#818cf8" strokeWidth={3} dot={{ r: 4, fill: '#818cf8', strokeWidth: 0 }} activeDot={{ r: 6 }} />
                 </LineChart>
@@ -370,7 +370,7 @@ export default function AdminDashboardPage() {
       </div>
       
       <footer className="mt-10 text-center text-xs text-slate-500 pb-4 border-t border-slate-800/50 pt-6">
-        © {new Date().getFullYear()} Ornot System. Crafted with Next.js & Tailwind.
+        © {new Date().getFullYear()} Ornot Group. All rights reserved.
       </footer>
     </div>
   );
