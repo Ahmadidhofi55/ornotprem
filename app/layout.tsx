@@ -35,6 +35,9 @@ export const metadata: Metadata = {
     title: 'Ornot Prem - Platform Jual Beli Akun Premium',
     description: 'Platform jual beli akun premium otomatis, aman, instan, dan terpercaya.',
   },
+  verification: {
+    google: 'rvsqGn89cEtnpFhYgTt8OtU7EaRgQ3lq1X1TV6yhaL8',
+  },
 };
 
 export default function RootLayout({
