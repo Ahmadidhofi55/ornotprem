@@ -23,12 +23,18 @@ export default function Footer() {
               </span>
             </div>
             <p className="text-gray-500 text-xs text-center md:text-left font-medium">
-              &copy; {new Date().getFullYear()} ORNOT PREM (OrnotDev Digital Agency). Hak Cipta Dilindungi.
+              &copy; {new Date().getFullYear()} ORNOT PREM (Ornot Group). All Right Reserved.
             </p>
           </div>
           
           {/* Kanan: Tautan Footer bergaya Navbar Pill */}
           <div className="flex flex-wrap justify-center gap-2 sm:gap-4 text-sm font-medium">
+            <Link 
+              href="/blog" 
+              className="px-4 py-2 rounded-full bg-white/5 border border-white/5 hover:border-white/10 hover:bg-white/10 text-gray-300 hover:text-cyan-400 transition-all duration-300"
+            >
+              Blog
+            </Link>
             <Link 
               href="/syarat-ketentuan" 
               className="px-4 py-2 rounded-full bg-white/5 border border-white/5 hover:border-white/10 hover:bg-white/10 text-gray-300 hover:text-cyan-400 transition-all duration-300"
