@@ -176,7 +176,7 @@ function CheckoutForm() {
 
           <div className="space-y-4 text-sm font-medium mb-6">
             <div className="flex justify-between text-gray-300">
-              <span>Harga Dasar + Margin</span>
+              <span>Harga </span>
               <span>Rp {displayPrice.toLocaleString('id-ID')}</span>
             </div>
             <div className="flex justify-between text-gray-300">

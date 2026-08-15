@@ -1,5 +1,8 @@
+// app/page.tsx
 import Link from 'next/link';
 import { createClient } from '@supabase/supabase-js';
+import HomeWidgets from '@/components/HomeWidgets'; 
+
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 const supabase = createClient(supabaseUrl, supabaseKey);
@@ -54,10 +57,11 @@ const getCardGradient = (index: number) => {
 export default async function HomePage({ 
   searchParams 
 }: { 
-  searchParams: Promise<{ category?: string }> 
+  searchParams: Promise<{ category?: string; q?: string }> 
 }) {
   const params = await searchParams;
   const activeCategory = params.category || 'semua';
+  const searchQuery = params.q?.toLowerCase() || '';
 
   let rawProducts: Product[] = [];
   let debugError = "";
@@ -98,9 +102,6 @@ export default async function HomePage({
       if (minData && !isNaN(Number(minData.value))) minMargin = Number(minData.value);
       if (maxData && !isNaN(Number(maxData.value))) maxMargin = Number(maxData.value);
     }
-    if (supabaseRes.error) {
-      console.error("Gagal mengambil setting DB:", supabaseRes.error);
-    }
   } catch (error: unknown) {
     if (error instanceof Error) {
       debugError = `Koneksi gagal: ${error.message}`;
@@ -135,6 +136,15 @@ export default async function HomePage({
   const displayProducts = Object.values(groupedProductsMap);
 
   const filteredProducts = displayProducts.filter(p => {
+    // 1. FILTER PENCARIAN
+    if (searchQuery) {
+      const matchesSearch = 
+        p.brandName.toLowerCase().includes(searchQuery) || 
+        (p.name || '').toLowerCase().includes(searchQuery);
+      if (!matchesSearch) return false;
+    }
+
+    // 2. FILTER KATEGORI
     if (activeCategory === 'semua') return true;
     
     const cat = (p.category || '').toLowerCase();
@@ -173,8 +183,6 @@ export default async function HomePage({
     return false;
   });
 
-  // --- TAMBAHAN UNTUK SEO: SCHEMA MARKUP JSON-LD ---
-  // Ini akan memberi tahu Google bahwa halaman ini berisi daftar produk beserta harganya
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "ItemList",
@@ -198,7 +206,6 @@ export default async function HomePage({
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white font-sans overflow-hidden relative selection:bg-cyan-500/30">
       
-      {/* INJEKSI JSON-LD KE DALAM HTML */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -209,7 +216,7 @@ export default async function HomePage({
 
       <main className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-24">
         
-        {/* HERO SECTION SEMANTIK (HEADER) */}
+        {/* HERO SECTION */}
         <header className="text-center max-w-4xl mx-auto flex flex-col items-center">
           <div className="mb-6 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-md">
             <span className="relative flex h-2 w-2">
@@ -228,21 +235,28 @@ export default async function HomePage({
           </h1>
         </header>
 
+        {/* --- INJEKSI KOMPONEN WIDGET PENCARIAN & LACAK --- */}
+        <HomeWidgets />
+
         {debugError && (
-          <div className="mt-8 max-w-3xl mx-auto bg-red-900/30 border border-red-500/50 p-4 rounded-2xl text-center">
+          <div className="mt-4 max-w-3xl mx-auto bg-red-900/30 border border-red-500/50 p-4 rounded-2xl text-center">
             <p className="text-red-400 font-bold mb-1">Peringatan Debugging:</p>
             <p className="text-red-200 text-sm">{debugError}</p>
           </div>
         )}
 
         {/* KATEGORI TABS SECTION */}
-        <section aria-label="Kategori Produk" className="mt-6 flex flex-wrap justify-center gap-3">
+        <section aria-label="Kategori Produk" className="mt-4 flex flex-wrap justify-center gap-3">
           {CATEGORIES.map((category) => (
             <Link
               key={category.id}
-              href={category.id === 'semua' ? '/' : `/?category=${category.id}`}
+              href={
+                category.id === 'semua' 
+                  ? (searchQuery ? `/?q=${searchQuery}` : '/') 
+                  : `/?category=${category.id}${searchQuery ? `&q=${searchQuery}` : ''}`
+              }
               title={`Kategori ${category.label}`}
-              className={`px-6 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 flex items-center gap-2 ${
+              className={`px-5 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 flex items-center gap-2 ${
                 activeCategory === category.id
                   ? 'bg-white text-black shadow-[0_0_20px_rgba(255,255,255,0.3)] scale-105'
                   : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white border border-white/5'
@@ -257,8 +271,15 @@ export default async function HomePage({
         {/* GRID PRODUK SECTION */}
         <section aria-label="Daftar Akun Premium" className="mt-10 max-w-5xl mx-auto">
           {filteredProducts.length === 0 ? (
-            <div className="text-center py-20 text-gray-500 bg-white/5 rounded-3xl border border-white/10 mt-6">
-              <p className="text-xl">Belum ada produk di kategori ini.</p>
+            <div className="text-center py-20 text-gray-400 bg-white/5 rounded-3xl border border-white/10 mt-6">
+              <span className="text-4xl mb-4 block">🔍</span>
+              <p className="text-xl font-bold text-white mb-2">Produk Tidak Ditemukan</p>
+              <p className="text-sm">Coba gunakan kata kunci lain atau pilih kategori yang berbeda.</p>
+              {searchQuery && (
+                <Link href="/" className="mt-6 inline-block bg-white/10 hover:bg-white/20 px-6 py-2 rounded-full text-sm font-bold transition-colors">
+                  Hapus Pencarian
+                </Link>
+              )}
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6">

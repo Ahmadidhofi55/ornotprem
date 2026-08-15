@@ -1,9 +1,17 @@
 // app/dashboard/topup/page.tsx
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react'; 
 import { useRouter } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
+
+// --- DEKLARASI GLOBAL META PIXEL ---
+declare global {
+  interface Window {
+    fbq: (...args: unknown[]) => void;
+  }
+}
+// -----------------------------------
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
@@ -69,12 +77,11 @@ export default function DepositPage() {
           const json = await res.json();
 
           if (json.success && (json.data.status === 'success' || json.data.status === 'SUCCESS')) {
-            clearInterval(interval);
+            clearInterval(interval); // Stop interval
             
             const session = JSON.parse(localStorage.getItem('user_session') || '{}');
             const depositAmount = Number(depositData.total_bayar);
 
-            // 1. Ambil saldo user terbaru dari database
             const { data: currentUser } = await supabase
               .from('users')
               .select('balance')
@@ -92,7 +99,7 @@ export default function DepositPage() {
 
             if (updateError) {
               console.error('Gagal memperbarui saldo otomatis:', updateError.message);
-              return;
+              return; // Jangan lanjutkan jika gagal update DB
             }
 
             // 3. Update status deposit di tabel deposits menjadi SUCCESS
@@ -101,11 +108,25 @@ export default function DepositPage() {
               .update({ status: 'SUCCESS', updated_at: new Date() })
               .eq('invoice_number', depositData.invoice);
 
+            // ==============================================================
+            // 4. 🔥 INTEGRASI META PIXEL UNTUK DEPOSIT BERHASIL 🔥
+            // ==============================================================
+            if (typeof window !== 'undefined' && window.fbq) {
+              window.fbq('track', 'Purchase', {
+                value: depositAmount,
+                currency: 'IDR',
+                content_name: 'Top Up Saldo - Ornot Prem',
+                order_id: depositData.invoice
+              });
+              console.log("🔥 Meta Pixel 'Purchase' Fired untuk Top Up!");
+            }
+            // ==============================================================
+
             setSuccessMessage(`Pembayaran berhasil! Saldo sebesar Rp ${depositAmount.toLocaleString('id-ID')} telah ditambahkan secara otomatis.`);
             setDepositData(null); 
             setAmount('');
             
-            // 4. Update state user di frontend
+            // 5. Update state user di frontend
             setUser(prev => prev ? { ...prev, balance: newBalance } : null);
           }
         } catch (err) {
@@ -117,7 +138,7 @@ export default function DepositPage() {
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [depositData]);
+  }, [depositData]); // Bergantung pada depositData
 
   // 1. Buat Permintaan Deposit
   const handleCreateDeposit = async (e: React.FormEvent) => {
@@ -147,6 +168,16 @@ export default function DepositPage() {
       setDepositData(json.data);
       setSuccessMessage('QRIS deposit berhasil dibuat! Silakan scan kode di bawah.');
 
+      // --- Meta Pixel: Track InitiateCheckout saat Generate QRIS ---
+      if (typeof window !== 'undefined' && window.fbq) {
+        window.fbq('track', 'InitiateCheckout', {
+          value: numericAmount,
+          currency: 'IDR',
+          content_name: 'Generate QRIS Top Up'
+        });
+      }
+      // -------------------------------------------------------------
+
       const session = JSON.parse(localStorage.getItem('user_session') || '{}');
       
       const { error: insertError } = await supabase.from('deposits').insert([{
@@ -170,7 +201,7 @@ export default function DepositPage() {
     }
   };
 
-  // 2. Cek Status Manual
+  // 2. Cek Status Manual (Fallback jika websocket lambat)
   const handleCheckStatus = async () => {
     if (!depositData) return;
     setIsCheckingStatus(true);
@@ -199,6 +230,17 @@ export default function DepositPage() {
 
         await supabase.from('users').update({ balance: newBalance, updated_at: new Date() }).eq('id', session.id);
         await supabase.from('deposits').update({ status: 'SUCCESS', updated_at: new Date() }).eq('invoice_number', depositData.invoice);
+
+        // --- Meta Pixel: Track Purchase (Manual Cek) ---
+        if (typeof window !== 'undefined' && window.fbq) {
+          window.fbq('track', 'Purchase', {
+            value: depositAmount,
+            currency: 'IDR',
+            content_name: 'Top Up Saldo - Ornot Prem (Manual Check)',
+            order_id: depositData.invoice
+          });
+        }
+        // -----------------------------------------------
 
         setSuccessMessage(`Pembayaran berhasil! Saldo sebesar Rp ${depositAmount.toLocaleString('id-ID')} telah ditambahkan.`);
         setDepositData(null); 
@@ -388,7 +430,7 @@ export default function DepositPage() {
         {/* ======================================================== */}
         <div className="lg:col-span-5 space-y-6 lg:space-y-8 sticky top-24">
           
-          {/* Wallet Balance Card (Mini Version of Dashboard) */}
+          {/* Wallet Balance Card */}
           <div className="bg-gradient-to-br from-indigo-500 via-purple-600 to-indigo-900 rounded-[2rem] p-6 sm:p-8 shadow-xl shadow-indigo-900/30 text-white relative overflow-hidden border border-white/10 group">
             <div className="absolute top-0 right-0 -mr-12 -mt-12 w-32 h-32 rounded-full bg-white/10 blur-2xl"></div>
             

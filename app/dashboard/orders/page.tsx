@@ -5,6 +5,14 @@ import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
 
+// --- DEKLARASI GLOBAL META PIXEL ---
+declare global {
+  interface Window {
+    fbq: (...args: unknown[]) => void;
+  }
+}
+// -----------------------------------
+
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 const supabase = createClient(supabaseUrl, supabaseKey);
@@ -123,6 +131,19 @@ export default function NewOrderPage() {
     if (!customerWa) { setErrorMessage('Masukkan nomor WhatsApp tujuan.'); return; }
 
     setIsSubmitting(true);
+
+    // --- 1. META PIXEL: Track InitiateCheckout saat menekan Konfirmasi ---
+    // Di sini value tetap asli agar FB tahu niat belanjanya sebesar apa
+    if (typeof window !== 'undefined' && window.fbq) {
+      window.fbq('track', 'InitiateCheckout', {
+        content_name: currentProduct.name,
+        value: totalPrice,
+        currency: 'IDR',
+        num_items: qty
+      });
+    }
+    // ------------------------------------------------------------------------
+
     try {
       const session = JSON.parse(localStorage.getItem('user_session') || '{}');
       const uniqueRefId = `INV-${Date.now()}`;
@@ -144,10 +165,11 @@ export default function NewOrderPage() {
       }
 
       const totalProfitEarned = randomMarginApplied * qty;
+      const invoiceToUse = premkuData.invoice || uniqueRefId;
 
       const { error: insertError } = await supabase.from('transactions').insert([{
         user_id: session.id,
-        invoice_number: premkuData.invoice || uniqueRefId,
+        invoice_number: invoiceToUse,
         product_name: currentProduct.name,
         customer_wa: customerWa,
         base_price: currentProduct.price,
@@ -169,8 +191,21 @@ export default function NewOrderPage() {
       
       if (updateError) throw new Error(updateError.message);
 
+      // --- 2. META PIXEL: Track Purchase saat pesanan sukses ---
+      // VALUE: 0 (Nol) -> Agar ROAS di Iklan FB tidak double dengan uang Top Up
+      if (typeof window !== 'undefined' && window.fbq) {
+        window.fbq('track', 'Purchase', {
+          value: 0, 
+          currency: 'IDR',
+          content_name: currentProduct.name,
+          order_id: invoiceToUse
+        });
+        console.log("🔥 Meta Pixel 'Purchase' Fired (Value: 0) untuk Order Pakai Saldo!");
+      }
+      // -----------------------------------------------------------------------
+
       setUser(updatedUser);
-      setSuccessMessage(`Pesanan Berhasil! No Invoice: ${premkuData.invoice || uniqueRefId}`);
+      setSuccessMessage(`Pesanan Berhasil! No Invoice: ${invoiceToUse}`);
       setSelectedProductId(''); 
       setQty(1); 
       setCustomerWa('');
