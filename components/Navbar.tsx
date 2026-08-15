@@ -51,7 +51,6 @@ export default function Navbar() {
         </Link>
       </nav>
 
-      {/* 3. BAGIAN KANAN: Blok Background Ungu & Tombol */}
       <div 
         className="h-full bg-gradient-to-r from-indigo-600 to-purple-700 flex items-center justify-end px-6 lg:px-10 min-w-[150px] lg:min-w-[200px]"
         style={{ clipPath: 'polygon(15% 0, 100% 0, 100% 100%, 0% 100%)' }}

@@ -1,10 +1,18 @@
 // app/invoice/[id]/page.tsx
 "use client";
 
-import { useEffect, useState, use } from 'react';
+import { useEffect, useState, use, useRef } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+
+// --- DEKLARASI GLOBAL UNTUK MENGHILANGKAN ERROR TYPESCRIPT PADA FBQ ---
+declare global {
+  interface Window {
+    fbq: (...args: unknown[]) => void;
+  }
+}
+// ---------------------------------------------------------------------
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
@@ -27,10 +35,10 @@ interface ApiResponseLog {
   premku_deposit_invoice?: string;
 }
 
-export default function InvoiceInteractivePage({ 
-  params 
-}: { 
-  params: Promise<{ id: string }> 
+export default function InvoiceInteractivePage({
+  params
+}: {
+  params: Promise<{ id: string }>
 }) {
   const resolvedParams = use(params);
   const invoiceId = decodeURIComponent(resolvedParams.id);
@@ -41,7 +49,10 @@ export default function InvoiceInteractivePage({
   const [isLoading, setIsLoading] = useState(true);
   const [checkingPayment, setCheckingPayment] = useState(false);
 
-  // Ambil data transaksi awal
+  // Ref untuk mencegah meta pixel menembak data dobel saat halaman direfresh
+  const hasFiredPixel = useRef(false);
+
+  // 1. Ambil data transaksi awal dari Supabase
   useEffect(() => {
     const fetchTx = async () => {
       const { data, error } = await supabase
@@ -66,7 +77,7 @@ export default function InvoiceInteractivePage({
     fetchTx();
   }, [invoiceId]);
 
-  // AUTO-SYNC POLLING: Cek status pembayaran ke API setiap 5 detik jika belum PAID
+  // 2. Polling otomatis untuk mengecek apakah pembayaran QRIS sudah masuk
   useEffect(() => {
     if (!transaction || transaction.payment_status === 'PAID') return;
 
@@ -81,27 +92,48 @@ export default function InvoiceInteractivePage({
         const result = await res.json();
 
         if (result.success && result.status === 'PAID') {
-          // Jika sudah bayar, reload atau update state lokal ke PAID
           setTransaction(prev => prev ? { ...prev, payment_status: 'PAID' } : null);
         }
       } catch (e) {
-        console.error("Gagal sinkronisasi pembayaran", e);
+        console.error("Failed to sync payment status", e);
       } finally {
         setCheckingPayment(false);
       }
-    }, 5000); // Cek setiap 5 detik
+    }, 5000);
 
     return () => clearInterval(interval);
   }, [transaction, invoiceId]);
 
+  // 3. --- EFFECT KHUSUS META PIXEL "PURCHASE" ---
+  useEffect(() => {
+    // Jika status PAID dan pixel belum ditembak
+    if (transaction?.payment_status === 'PAID' && !hasFiredPixel.current) {
+      if (typeof window !== 'undefined' && window.fbq) {
+        // TypeScript tidak akan error lagi di sini karena sudah dideklarasikan di atas
+        window.fbq('track', 'Purchase', {
+          value: transaction.total_price,
+          currency: 'IDR',
+          content_name: transaction.product_name,
+          order_id: invoiceId
+        });
+        console.log("🔥 Meta Pixel 'Purchase' Event Fired!");
+      }
+      // Kunci ref agar tidak tertembak lagi jika re-render
+      hasFiredPixel.current = true;
+    }
+  }, [transaction, invoiceId]);
+  // ----------------------------------------------
+
+  // --- TAMPILAN LOADING ---
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[#0a0a0a] text-cyan-400 flex items-center justify-center font-bold animate-pulse">
-        Memuat Tagihan Pembayaran...
+        Loading Payment Invoice...
       </div>
     );
   }
 
+  // --- TAMPILAN 404 (JIKA INVOICE TIDAK ADA) ---
   if (!transaction) {
     return (
       <div className="min-h-screen bg-[#0a0a0a] flex flex-col items-center justify-center p-6 text-center text-white">
@@ -123,7 +155,6 @@ export default function InvoiceInteractivePage({
       <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-cyan-600/10 blur-[120px] pointer-events-none"></div>
 
       <main className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-16">
-        
         <div className="text-center mb-10">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 mb-4 backdrop-blur-md">
             <span className={`w-2 h-2 rounded-full ${isPaid ? 'bg-emerald-500' : 'bg-amber-500 animate-pulse'}`}></span>
@@ -138,12 +169,12 @@ export default function InvoiceInteractivePage({
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          
-          {/* Kolom Kiri: Detail Pesanan */}
+
+          {/* KOLOM KIRI: DETAIL PESANAN */}
           <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-8 rounded-[2rem] shadow-xl flex flex-col justify-between">
             <div>
               <h2 className="text-xl font-bold text-white mb-6 border-b border-white/10 pb-4">Detail Pesanan</h2>
-              
+
               <div className="space-y-4">
                 <div>
                   <p className="text-xs text-gray-500 font-medium mb-1">Produk</p>
@@ -168,9 +199,10 @@ export default function InvoiceInteractivePage({
               </div>
             </div>
 
+            {/* Tombol Cek Akun (Hanya Muncul Jika Sudah Lunas) */}
             {isPaid && (
               <div className="mt-8 pt-6 border-t border-white/10">
-                <button 
+                <button
                   onClick={() => router.push(`/cek-pesanan?invoice=${transaction.invoice_number}`)}
                   className="w-full bg-cyan-500 hover:bg-cyan-400 text-black font-extrabold py-3.5 rounded-xl transition-all shadow-lg shadow-cyan-500/20 text-center block"
                 >
@@ -180,9 +212,10 @@ export default function InvoiceInteractivePage({
             )}
           </div>
 
-          {/* Kolom Kanan: QRIS / Status Lunas */}
+          {/* KOLOM KANAN: QRIS / STATUS LUNAS */}
           <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-8 rounded-[2rem] shadow-xl flex flex-col items-center justify-center text-center">
             {isPaid ? (
+              // Tampilan Saat Lunas
               <div className="text-emerald-400 flex flex-col items-center py-6">
                 <div className="w-20 h-20 bg-emerald-500/20 rounded-full flex items-center justify-center mb-4 border border-emerald-500/30">
                   <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -193,7 +226,7 @@ export default function InvoiceInteractivePage({
                 <p className="text-gray-300 text-sm mb-4">
                   {transaction.digital_account_details || 'Akun premium telah dikirimkan otomatis ke WhatsApp Anda.'}
                 </p>
-                <Link 
+                <Link
                   href={`/cek-pesanan?invoice=${transaction.invoice_number}`}
                   className="text-cyan-400 font-bold hover:underline text-sm"
                 >
@@ -201,16 +234,17 @@ export default function InvoiceInteractivePage({
                 </Link>
               </div>
             ) : (
+              // Tampilan Saat Belum Lunas (Menampilkan QRIS)
               <>
                 <h2 className="text-xl font-bold text-white mb-2">Scan QRIS</h2>
                 <p className="text-gray-400 text-sm mb-6">Scan menggunakan aplikasi bank atau e-wallet apa saja. Halaman akan berubah otomatis saat lunas.</p>
-                
+
                 {apiLog?.qr_image ? (
                   <div className="bg-white p-4 rounded-3xl shadow-2xl mb-6">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img 
-                      src={apiLog.qr_image} 
-                      alt="QRIS Pembayaran" 
+                    <img
+                      src={apiLog.qr_image}
+                      alt="QRIS Pembayaran"
                       className="w-48 h-48 md:w-56 md:h-56 object-contain"
                     />
                   </div>
@@ -219,7 +253,7 @@ export default function InvoiceInteractivePage({
                     QRIS tidak tersedia
                   </div>
                 )}
-                
+
                 <div className="flex items-center gap-2 text-xs text-cyan-400 bg-cyan-500/10 px-4 py-2.5 rounded-xl border border-cyan-500/20 animate-pulse">
                   <span className="w-2 h-2 rounded-full bg-cyan-400"></span>
                   Menunggu scan & pembayaran Anda...
