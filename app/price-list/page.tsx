@@ -174,7 +174,7 @@ export default async function PriceListPage({
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-cyan-600/10 blur-[120px] pointer-events-none"></div>
 
-      <main className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-20">
+      <main className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
 
         {/* Header Halaman */}
         <header className="text-center max-w-3xl mx-auto mb-10">
@@ -182,7 +182,7 @@ export default async function PriceListPage({
             <span className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse"></span>
             Realtime Update Pricing
           </div>
-          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4">
+          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-2">
             Daftar <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">Harga Lengkap</span>
           </h1>
           <p className="text-gray-400 text-lg">
@@ -198,7 +198,7 @@ export default async function PriceListPage({
         )}
 
         {/* --- SEARCH BAR --- */}
-        <div className="max-w-xl mx-auto mb-8 relative z-10">
+        <div className="max-w-xl mx-auto mb-6 relative z-10">
           <form method="GET" action="/price-list" className="relative">
             {activeFilter !== 'semua' && <input type="hidden" name="filter" value={activeFilter} />}
             <input 
@@ -262,7 +262,7 @@ export default async function PriceListPage({
                     <th className="py-5 px-6 w-[40%]">Nama Aplikasi / Paket</th>
                     <th className="py-5 px-6">Tipe Akun</th>
                     <th className="py-5 px-6">Status Stok</th>
-                    <th className="py-5 px-6 text-right">Harga Nett</th>
+                    <th className="py-5 px-6 text-right">Harga</th>
                     <th className="py-5 px-6 text-center">Aksi</th>
                   </tr>
                 </thead>

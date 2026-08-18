@@ -26,6 +26,7 @@ export default function UsersCRUDPage() {
   const [editingUser, setEditingUser] = useState<UserProfile | null>(null);
   const [formBalance, setFormBalance] = useState<number>(0);
   const [formRole, setFormRole] = useState('users');
+  const [formPassword, setFormPassword] = useState(''); // <-- Tambahan State Password
 
   // Modal Delete State
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -65,16 +66,30 @@ export default function UsersCRUDPage() {
     setEditingUser(user);
     setFormBalance(Number(user.balance || 0));
     setFormRole(user.role || 'users');
+    setFormPassword(''); // Reset field password saat modal dibuka
     setIsModalOpen(true);
   };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (editingUser) {
+      // Siapkan data yang akan diupdate
+      const updateData: any = {
+        balance: formBalance,
+        role: formRole,
+        updated_at: new Date()
+      };
+
+      // Hanya update password jika form password tidak kosong
+      if (formPassword.trim() !== "") {
+        updateData.password = formPassword;
+      }
+
       await supabase
         .from('users')
-        .update({ balance: formBalance, role: formRole, updated_at: new Date() })
+        .update(updateData)
         .eq('id', editingUser.id);
+        
       setIsModalOpen(false);
       fetchUsers();
     }
@@ -100,7 +115,7 @@ export default function UsersCRUDPage() {
       <div className="mb-6 flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4">
         <div>
           <h1 className="text-2xl font-bold text-white">Users Management</h1>
-          <p className="text-sm text-slate-400 mt-1">Manage customer accounts, balances, and admin roles.</p>
+          <p className="text-sm text-slate-400 mt-1">Manage customer accounts, balances, passwords, and admin roles.</p>
         </div>
       </div>
 
@@ -131,17 +146,32 @@ export default function UsersCRUDPage() {
           <div className="bg-[#1e293b] border border-slate-700 w-full max-w-md rounded-2xl shadow-2xl p-6">
             <h3 className="text-xl font-bold text-white mb-4">Edit User</h3>
             <form onSubmit={handleSave}>
+              
               <div className="mb-4">
                 <label className="block text-sm font-medium text-slate-400 mb-1">Wallet Balance (Rp)</label>
                 <input type="number" required value={formBalance} onChange={(e) => setFormBalance(Number(e.target.value))} className="w-full bg-[#0f172a] border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-indigo-500" />
               </div>
-              <div className="mb-6">
+              
+              <div className="mb-4">
                 <label className="block text-sm font-medium text-slate-400 mb-1">Account Role</label>
                 <select value={formRole} onChange={(e) => setFormRole(e.target.value)} className="w-full bg-[#0f172a] border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-indigo-500">
                   <option value="users">Regular User</option>
                   <option value="admin">Administrator</option>
                 </select>
               </div>
+
+              {/* Input Password Baru */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-slate-400 mb-1">New Password (Opsional)</label>
+                <input 
+                  type="text" 
+                  value={formPassword} 
+                  onChange={(e) => setFormPassword(e.target.value)} 
+                  placeholder="Leave it blank if you don't want to change the password"
+                  className="w-full bg-[#0f172a] border border-slate-700 rounded-lg px-4 py-2 text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500" 
+                />
+              </div>
+
               <div className="flex justify-end gap-3">
                 <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 rounded-lg text-sm font-bold text-slate-400 hover:text-white transition-colors">Cancel</button>
                 <button type="submit" className="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors">Save Changes</button>

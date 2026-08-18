@@ -21,6 +21,10 @@ export default function ResetRequestsPage() {
   const [requests, setRequests] = useState<ResetRequestItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Modal Delete State
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [requestToDelete, setRequestToDelete] = useState<string | null>(null);
+
   const fetchRequests = useCallback(async () => {
     setIsLoading(true);
     const { data, error } = await supabase
@@ -33,7 +37,11 @@ export default function ResetRequestsPage() {
   }, []);
 
   useEffect(() => {
-    void fetchRequests();
+    const loadRequests = async () => {
+      await fetchRequests();
+    };
+
+    void loadRequests();
   }, [fetchRequests]);
 
   const handleUpdateStatus = async (id: string, newStatus: string) => {
@@ -43,28 +51,37 @@ export default function ResetRequestsPage() {
       .eq('id', id);
 
     if (!error) {
-      fetchRequests();
+      await fetchRequests();
     } else {
-      alert('Gagal memperbarui status: ' + error.message);
+      alert('Failed Update Status: ' + error.message);
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Hapus riwayat permintaan ini?')) return;
+  const openDeleteModal = (id: string) => {
+    setRequestToDelete(id);
+    setIsDeleteModalOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!requestToDelete) return;
+
     const { error } = await supabase
       .from('password_resets')
       .delete()
-      .eq('id', id);
+      .eq('id', requestToDelete);
 
     if (!error) {
       fetchRequests();
     } else {
       alert('Gagal menghapus: ' + error.message);
     }
+
+    setIsDeleteModalOpen(false);
+    setRequestToDelete(null);
   };
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full relative">
       
       {/* HEADER SECTION */}
       <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-[#1e293b] p-5 sm:p-6 rounded-2xl border border-slate-800 shadow-lg">
@@ -140,7 +157,7 @@ export default function ResetRequestsPage() {
                               </button>
                             )}
                             <button 
-                              onClick={() => handleDelete(item.id)} 
+                              onClick={() => openDeleteModal(item.id)} 
                               className="p-2 bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 rounded-lg transition-colors border border-rose-500/20" 
                               title="Delete History"
                             >
@@ -157,6 +174,38 @@ export default function ResetRequestsPage() {
           </div>
         )}
       </div>
+
+      {/* MODAL HAPUS */}
+      {isDeleteModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
+          <div className="bg-[#1e293b] border border-slate-700 w-full max-w-sm rounded-2xl shadow-2xl p-6 text-center transform transition-all">
+            <div className="w-12 h-12 rounded-full bg-rose-500/10 flex items-center justify-center mx-auto mb-4">
+              <svg className="w-6 h-6 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-bold text-white mb-2">Delete Request History</h3>
+            <p className="text-sm text-slate-400 mb-6">
+              Are you sure you want to delete this password reset request? This action cannot be undone.
+            </p>
+            <div className="flex justify-center gap-3">
+              <button 
+                onClick={() => setIsDeleteModalOpen(false)} 
+                className="px-4 py-2 rounded-lg text-sm font-bold text-slate-300 bg-slate-700 hover:bg-slate-600 transition-colors"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={confirmDelete} 
+                className="bg-rose-500 hover:bg-rose-600 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-lg transition-colors"
+              >
+                Yes, Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

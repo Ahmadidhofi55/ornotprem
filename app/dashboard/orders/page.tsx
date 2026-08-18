@@ -133,12 +133,12 @@ export default function NewOrderPage() {
     setIsSubmitting(true);
 
     // --- 1. META PIXEL: Track InitiateCheckout saat menekan Konfirmasi ---
-    // Di sini value tetap asli agar FB tahu niat belanjanya sebesar apa
     if (typeof window !== 'undefined' && window.fbq) {
       window.fbq('track', 'InitiateCheckout', {
-        content_name: currentProduct.name,
-        value: totalPrice,
+        value: Number(totalPrice),           // PERBAIKAN: Wajib dikonversi ke Number
         currency: 'IDR',
+        content_name: currentProduct.name,
+        content_category: 'Balance Order',   // PERBAIKAN: Menambahkan kategori
         num_items: qty
       });
     }
@@ -191,16 +191,17 @@ export default function NewOrderPage() {
       
       if (updateError) throw new Error(updateError.message);
 
-      // --- 2. META PIXEL: Track Purchase saat pesanan sukses ---
-      // VALUE: 0 (Nol) -> Agar ROAS di Iklan FB tidak double dengan uang Top Up
+      // --- 2. META PIXEL: Track Pesanan ---
+      // PERBAIKAN: Ganti 'Purchase' jadi 'Subscribe', masukkan nilai harga asli (bukan 0)
       if (typeof window !== 'undefined' && window.fbq) {
-        window.fbq('track', 'Purchase', {
-          value: 0, 
-          currency: 'IDR',
+        window.fbq('track', 'Subscribe', {
+          value: Number(totalPrice),           // WAJIB ANGKA (Harga aslinya)
+          currency: 'IDR',                     // WAJIB ADA
           content_name: currentProduct.name,
+          content_category: 'Balance Order',   // WAJIB ADA
           order_id: invoiceToUse
         });
-        console.log("🔥 Meta Pixel 'Purchase' Fired (Value: 0) untuk Order Pakai Saldo!");
+        console.log("🔥 Meta Pixel 'Subscribe' Fired untuk Order Pakai Saldo!");
       }
       // -----------------------------------------------------------------------
 
@@ -433,7 +434,7 @@ export default function NewOrderPage() {
                     : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-500/25 active:scale-[0.98]'
                 }`}
               >
-                {isSubmitting ? 'MEMPROSES PESANAN...' : 'KONFIRMASI PESANAN'}
+                {isSubmitting ? 'Order Processing...' : 'Order Confirmation'}
               </button>
             )}
 
