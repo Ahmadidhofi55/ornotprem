@@ -113,9 +113,10 @@ export default function DepositPage() {
             // ==============================================================
             if (typeof window !== 'undefined' && window.fbq) {
               window.fbq('track', 'Purchase', {
-                value: depositAmount,
-                currency: 'IDR',
+                value: depositAmount,          // WAJIB ANGKA
+                currency: 'IDR',               // WAJIB ADA
                 content_name: 'Top Up Saldo - Ornot Prem',
+                content_category: 'Deposit',   // TAMBAHAN WAJIB AGAR META BISA MEMBEDAKAN
                 order_id: depositData.invoice
               });
               console.log("🔥 Meta Pixel 'Purchase' Fired untuk Top Up!");
@@ -173,7 +174,8 @@ export default function DepositPage() {
         window.fbq('track', 'InitiateCheckout', {
           value: numericAmount,
           currency: 'IDR',
-          content_name: 'Generate QRIS Top Up'
+          content_name: 'Generate QRIS Top Up',
+          content_category: 'Deposit' // Tambahkan ini juga biar rapi
         });
       }
       // -------------------------------------------------------------
@@ -234,9 +236,10 @@ export default function DepositPage() {
         // --- Meta Pixel: Track Purchase (Manual Cek) ---
         if (typeof window !== 'undefined' && window.fbq) {
           window.fbq('track', 'Purchase', {
-            value: depositAmount,
-            currency: 'IDR',
+            value: depositAmount,          // WAJIB ANGKA
+            currency: 'IDR',               // WAJIB ADA
             content_name: 'Top Up Saldo - Ornot Prem (Manual Check)',
+            content_category: 'Deposit',   // TAMBAHAN WAJIB
             order_id: depositData.invoice
           });
         }

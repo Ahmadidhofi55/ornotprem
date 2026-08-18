@@ -109,11 +109,12 @@ export default function InvoiceInteractivePage({
     // Jika status PAID dan pixel belum ditembak
     if (transaction?.payment_status === 'PAID' && !hasFiredPixel.current) {
       if (typeof window !== 'undefined' && window.fbq) {
-        // TypeScript tidak akan error lagi di sini karena sudah dideklarasikan di atas
+        // PERBAIKAN: Membungkus total_price dengan Number() dan menambahkan content_category
         window.fbq('track', 'Purchase', {
-          value: transaction.total_price,
-          currency: 'IDR',
+          value: Number(transaction.total_price), // WAJIB ANGKA
+          currency: 'IDR',                        // WAJIB ADA
           content_name: transaction.product_name,
+          content_category: 'Direct Purchase',    // TAMBAHAN AGAR RAPI DI REPORT META
           order_id: invoiceId
         });
         console.log("🔥 Meta Pixel 'Purchase' Event Fired!");

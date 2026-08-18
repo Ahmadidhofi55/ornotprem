@@ -50,23 +50,37 @@ interface DepositItem {
   status: string;
 }
 
+interface ProductItem {
+  id: number;
+  name: string;
+  status: string;
+  stock: number;
+}
+
 export default function AdminDashboardPage() {
   const [usersList, setUsersList] = useState<UserProfile[]>([]);
   const [transactionsList, setTransactionsList] = useState<Transaction[]>([]);
   const [settingsList, setSettingsList] = useState<SettingItem[]>([]);
   const [resetRequestsList, setResetRequestsList] = useState<ResetRequest[]>([]);
   const [depositsList, setDepositsList] = useState<DepositItem[]>([]);
+  const [productsList, setProductsList] = useState<ProductItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchAdminData = async () => {
       try {
-        const [usersRes, txRes, settingsRes, resetRes, depRes] = await Promise.all([
+        const fetchProductsPromise = fetch('/api/products', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+        }).then(res => res.json()).catch(() => null);
+
+        const [usersRes, txRes, settingsRes, resetRes, depRes, productsRes] = await Promise.all([
           supabase.from('users').select('*').order('full_name', { ascending: true }),
           supabase.from('transactions').select('*').order('created_at', { ascending: false }).limit(50), 
           supabase.from('settings').select('*'),
           supabase.from('password_resets').select('*'),
-          supabase.from('deposits').select('*')
+          supabase.from('deposits').select('*'),
+          fetchProductsPromise
         ]);
 
         setUsersList(usersRes.data || []);
@@ -74,6 +88,13 @@ export default function AdminDashboardPage() {
         setSettingsList(settingsRes.data || []);
         setResetRequestsList(resetRes.data || []);
         setDepositsList(depRes.data || []);
+
+        let rawProducts: ProductItem[] = [];
+        if (Array.isArray(productsRes)) rawProducts = productsRes;
+        else if (productsRes && Array.isArray(productsRes.data)) rawProducts = productsRes.data;
+        else if (productsRes && Array.isArray(productsRes.products)) rawProducts = productsRes.products;
+        
+        setProductsList(rawProducts);
 
       } catch (err) {
         console.error('Failed to load admin data:', err);
@@ -99,6 +120,10 @@ export default function AdminDashboardPage() {
 
   const totalRevenue = successTx.reduce((acc, tx) => acc + Number(tx.total_price || 0), 0);
   const totalProfit = successTx.reduce((acc, tx) => acc + Number(tx.margin || 0), 0);
+
+  const totalSuccessTxCount = successTx.length;
+  const totalStock = productsList.reduce((acc, prod) => acc + (Number(prod.stock) || 0), 0);
+  const outOfStockCount = productsList.filter(prod => Number(prod.stock) <= 0 || prod.status === 'unavailable').length;
 
   // --- CHART DATA PREPARATION ---
   const revenueByDate = successTx.reduce((acc: Record<string, number>, tx) => {
@@ -131,15 +156,9 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full space-y-8 animate-in duration-500">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">Admin Overview</h1>
-          <p className="text-sm text-slate-400 mt-1">Real-time platform analytics, financial reports, and system management.</p>
-        </div>
-      </div>
-
-      {/* --- TOP 6 STAT CARDS (KEMBALI KE 6 KOLOM DENGAN PENDING DEPOSITS) --- */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 sm:gap-6">
+      
+      {/* --- STAT CARDS GRID (Langsung Tampil Paling Atas) --- */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         
         {/* Revenue */}
         <div className="bg-[#1e293b] rounded-xl p-5 border border-slate-800/60 shadow-lg relative overflow-hidden group hover:border-indigo-500/30 transition-colors">
@@ -171,6 +190,20 @@ export default function AdminDashboardPage() {
           <p className="text-xs text-slate-500 mt-4">Based on transaction margin</p>
         </div>
 
+        {/* Total Success Transactions */}
+        <div className="bg-[#1e293b] rounded-xl p-5 border border-slate-800/60 shadow-lg relative overflow-hidden group hover:border-teal-500/30 transition-colors">
+          <div className="flex justify-between items-start">
+            <div>
+              <p className="text-slate-400 text-sm font-medium">Success Orders</p>
+              <h3 className="text-xl sm:text-2xl font-bold text-teal-400 mt-1">{totalSuccessTxCount}</h3>
+            </div>
+            <div className="p-2 bg-teal-500/10 rounded-lg text-teal-400">
+              <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            </div>
+          </div>
+          <p className="text-xs text-slate-500 mt-4">Successfully paid items</p>
+        </div>
+
         {/* Total Deposits */}
         <div className="bg-[#1e293b] rounded-xl p-5 border border-slate-800/60 shadow-lg relative overflow-hidden group hover:border-sky-500/30 transition-colors">
           <div className="flex justify-between items-start">
@@ -185,7 +218,7 @@ export default function AdminDashboardPage() {
           <p className="text-xs text-slate-500 mt-4">{successDeposits.length} Successful Top-ups</p>
         </div>
 
-        {/* Pending Deposits (Kolom Tambahan Baru) */}
+        {/* Pending Deposits */}
         <Link href="/admin/deposits" className="bg-[#1e293b] rounded-xl p-5 border border-slate-800/60 shadow-lg relative overflow-hidden group hover:border-amber-500/30 transition-colors block">
           <div className="flex justify-between items-start">
             <div>
@@ -198,6 +231,34 @@ export default function AdminDashboardPage() {
           </div>
           <p className="text-xs text-amber-400 mt-4 font-semibold group-hover:underline">Review Deposits →</p>
         </Link>
+
+        {/* Total Stock */}
+        <div className="bg-[#1e293b] rounded-xl p-5 border border-slate-800/60 shadow-lg relative overflow-hidden group hover:border-fuchsia-500/30 transition-colors">
+          <div className="flex justify-between items-start">
+            <div>
+              <p className="text-slate-400 text-sm font-medium">Total Stock</p>
+              <h3 className="text-xl sm:text-2xl font-bold text-fuchsia-400 mt-1">{totalStock}</h3>
+            </div>
+            <div className="p-2 bg-fuchsia-500/10 rounded-lg text-fuchsia-400">
+              <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
+            </div>
+          </div>
+          <p className="text-xs text-slate-500 mt-4">Available items in inventory</p>
+        </div>
+
+        {/* Out of Stock */}
+        <div className="bg-[#1e293b] rounded-xl p-5 border border-slate-800/60 shadow-lg relative overflow-hidden group hover:border-rose-500/30 transition-colors">
+          <div className="flex justify-between items-start">
+            <div>
+              <p className="text-slate-400 text-sm font-medium">Out of Stock</p>
+              <h3 className="text-xl sm:text-2xl font-bold text-rose-400 mt-1">{outOfStockCount}</h3>
+            </div>
+            <div className="p-2 bg-rose-500/10 rounded-lg text-rose-400">
+              <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+            </div>
+          </div>
+          <p className="text-xs text-rose-400 mt-4 font-semibold group-hover:underline">Needs restock</p>
+        </div>
 
         {/* Users */}
         <div className="bg-[#1e293b] rounded-xl p-5 border border-slate-800/60 shadow-lg relative overflow-hidden group hover:border-blue-500/30 transition-colors">
