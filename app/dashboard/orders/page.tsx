@@ -135,10 +135,10 @@ export default function NewOrderPage() {
     // --- 1. META PIXEL: Track InitiateCheckout saat menekan Konfirmasi ---
     if (typeof window !== 'undefined' && window.fbq) {
       window.fbq('track', 'InitiateCheckout', {
-        value: Number(totalPrice),           // PERBAIKAN: Wajib dikonversi ke Number
+        value: Number(totalPrice),
         currency: 'IDR',
         content_name: currentProduct.name,
-        content_category: 'Balance Order',   // PERBAIKAN: Menambahkan kategori
+        content_category: 'Balance Order',
         num_items: qty
       });
     }
@@ -148,12 +148,14 @@ export default function NewOrderPage() {
       const session = JSON.parse(localStorage.getItem('user_session') || '{}');
       const uniqueRefId = `INV-${Date.now()}`;
 
+      // API call ke backend route lokal kita
       const res = await fetch('/api/order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          product_id: currentProduct.id,
-          qty: qty,
+          // Mengubah data ke Number, tanpa mengirim api_key
+          product_id: Number(currentProduct.id),
+          qty: Number(qty),
           ref_id: uniqueRefId,
           target: customerWa
         })
@@ -192,13 +194,12 @@ export default function NewOrderPage() {
       if (updateError) throw new Error(updateError.message);
 
       // --- 2. META PIXEL: Track Pesanan ---
-      // PERBAIKAN: Ganti 'Purchase' jadi 'Subscribe', masukkan nilai harga asli (bukan 0)
       if (typeof window !== 'undefined' && window.fbq) {
         window.fbq('track', 'Subscribe', {
-          value: Number(totalPrice),           // WAJIB ANGKA (Harga aslinya)
-          currency: 'IDR',                     // WAJIB ADA
+          value: Number(totalPrice),
+          currency: 'IDR',
           content_name: currentProduct.name,
-          content_category: 'Balance Order',   // WAJIB ADA
+          content_category: 'Balance Order',
           order_id: invoiceToUse
         });
         console.log("🔥 Meta Pixel 'Subscribe' Fired untuk Order Pakai Saldo!");

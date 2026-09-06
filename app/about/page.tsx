@@ -24,7 +24,7 @@ export default function AboutPage() {
       {/* Background Glow */}
       <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full bg-cyan-600/10 blur-[120px] pointer-events-none"></div>
 
-      <main className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-20">
+      <main className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
         
         {/* Header Section */}
         <header className="text-center mb-16">
