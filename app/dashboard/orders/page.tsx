@@ -172,6 +172,7 @@ export default function NewOrderPage() {
       const { error: insertError } = await supabase.from('transactions').insert([{
         user_id: session.id,
         invoice_number: invoiceToUse,
+        api_product_id: Number(currentProduct.id), // PERBAIKAN: Tambahan kolom agar tidak error null constraint
         product_name: currentProduct.name,
         customer_wa: customerWa,
         base_price: currentProduct.price,
