@@ -115,7 +115,6 @@ export default function NewOrderPage() {
   const totalPrice = finalPricePerItem * qty;
   const isOutOfStock = currentProduct ? (currentProduct.stock <= 0 || currentProduct.status === 'unavailable') : false;
   
-  // LOGIKA STATUS SALDO
   const userBalance = Number(user?.balance || 0);
   const isInsufficientBalance = currentProduct ? userBalance < totalPrice : false;
 
@@ -132,7 +131,6 @@ export default function NewOrderPage() {
 
     setIsSubmitting(true);
 
-    // --- 1. META PIXEL: Track InitiateCheckout saat menekan Konfirmasi ---
     if (typeof window !== 'undefined' && window.fbq) {
       window.fbq('track', 'InitiateCheckout', {
         value: Number(totalPrice),
@@ -142,18 +140,15 @@ export default function NewOrderPage() {
         num_items: qty
       });
     }
-    // ------------------------------------------------------------------------
 
     try {
       const session = JSON.parse(localStorage.getItem('user_session') || '{}');
       const uniqueRefId = `INV-${Date.now()}`;
 
-      // API call ke backend route lokal kita
       const res = await fetch('/api/order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          // Mengubah data ke Number, tanpa mengirim api_key
           product_id: Number(currentProduct.id),
           qty: Number(qty),
           ref_id: uniqueRefId,
@@ -162,24 +157,32 @@ export default function NewOrderPage() {
       });
 
       const premkuData = await res.json();
-      if (!premkuData.success && !premkuData.invoice) {
+      if (!premkuData.success && !premkuData.invoice && !premkuData.data) {
         throw new Error(premkuData.message || 'Gagal memproses pesanan ke server pusat.');
       }
 
       const totalProfitEarned = randomMarginApplied * qty;
-      const invoiceToUse = premkuData.invoice || uniqueRefId;
+      const invoiceToUse = premkuData.invoice || premkuData.data?.invoice || uniqueRefId;
+      
+      // Ambil detail akun dari respons server Premku (jika ada di dalam properti account, credentials, dll)
+      const accountDetails = premkuData.account || premkuData.data?.account || premkuData.digital_account_details || null;
+      const apiLogStr = JSON.stringify(premkuData);
 
+      // PERBAIKAN: Menyimpan data lengkap sesuai struktur database (termasuk digital_account_details & api_response_log)
       const { error: insertError } = await supabase.from('transactions').insert([{
         user_id: session.id,
         invoice_number: invoiceToUse,
-        api_product_id: Number(currentProduct.id), // PERBAIKAN: Tambahan kolom agar tidak error null constraint
+        api_product_id: String(currentProduct.id),
         product_name: currentProduct.name,
         customer_wa: customerWa,
         base_price: currentProduct.price,
         margin: totalProfitEarned,
         total_price: totalPrice,
+        payment_channel: 'BALANCE',
         payment_status: 'PAID',
-        delivery_status: 'SUCCESS'
+        delivery_status: 'SUCCESS',
+        digital_account_details: accountDetails,
+        api_response_log: apiLogStr
       }]);
 
       if (insertError) throw new Error(insertError.message);
@@ -194,7 +197,6 @@ export default function NewOrderPage() {
       
       if (updateError) throw new Error(updateError.message);
 
-      // --- 2. META PIXEL: Track Pesanan ---
       if (typeof window !== 'undefined' && window.fbq) {
         window.fbq('track', 'Subscribe', {
           value: Number(totalPrice),
@@ -203,9 +205,7 @@ export default function NewOrderPage() {
           content_category: 'Balance Order',
           order_id: invoiceToUse
         });
-        console.log("🔥 Meta Pixel 'Subscribe' Fired untuk Order Pakai Saldo!");
       }
-      // -----------------------------------------------------------------------
 
       setUser(updatedUser);
       setSuccessMessage(`Pesanan Berhasil! No Invoice: ${invoiceToUse}`);
@@ -226,7 +226,6 @@ export default function NewOrderPage() {
   return (
     <div className="max-w-6xl mx-auto w-full pb-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
       
-      {/* HEADER PAGE */}
       <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-black text-white tracking-tight">Checkout Produk</h1>
@@ -238,7 +237,6 @@ export default function NewOrderPage() {
         </div>
       </div>
 
-      {/* ALERTS */}
       {successMessage && (
         <div className="mb-6 p-4 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-xl text-sm flex items-center gap-3 shadow-lg">
           <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
@@ -252,14 +250,9 @@ export default function NewOrderPage() {
         </div>
       )}
 
-      {/* DUAL COLUMN LAYOUT */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
         
-        {/* ======================================================== */}
-        {/* LEFT COLUMN: INPUT FORM */}
-        {/* ======================================================== */}
         <div className="lg:col-span-7 bg-[#1e293b] rounded-[2rem] p-6 sm:p-8 border border-slate-700/50 shadow-2xl">
-          
           <div className="flex items-center gap-4 mb-8 pb-6 border-b border-slate-700/50">
             <div className="w-12 h-12 bg-indigo-500/10 rounded-2xl flex items-center justify-center text-indigo-400 shadow-inner border border-indigo-500/20">
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
@@ -268,7 +261,6 @@ export default function NewOrderPage() {
           </div>
 
           <form id="orderForm" onSubmit={handleCheckout} className="space-y-6">
-            {/* Produk */}
             <div>
               <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2.5">Katalog Layanan</label>
               {isLoadingProducts ? (
@@ -301,9 +293,7 @@ export default function NewOrderPage() {
               )}
             </div>
 
-            {/* WA dan Qty (Grid) */}
             <div className="grid grid-cols-1 sm:grid-cols-12 gap-6">
-              
               <div className="sm:col-span-8">
                 <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2.5">Nomor WhatsApp</label>
                 <div className="relative flex items-center">
@@ -324,33 +314,23 @@ export default function NewOrderPage() {
               <div className="sm:col-span-4">
                 <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2.5">Kuantitas</label>
                 <div className="flex items-center bg-[#0f172a] border border-slate-700 rounded-2xl overflow-hidden h-[54px]">
-                  <button type="button" onClick={decrementQty} className="w-14 h-full flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-800 transition-colors border-r border-slate-700 font-bold text-lg select-none">
-                    -
-                  </button>
+                  <button type="button" onClick={decrementQty} className="w-14 h-full flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-800 transition-colors border-r border-slate-700 font-bold text-lg select-none">-</button>
                   <input 
                     type="number" 
                     min="1" 
                     value={qty} 
                     onChange={(e) => setQty(Math.max(1, parseInt(e.target.value) || 1))} 
                     className="w-full h-full bg-transparent text-center text-sm font-bold text-white focus:outline-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none" 
-                    style={{ MozAppearance: 'textfield' }} // Hilangkan panah spinner bawaan browser
+                    style={{ MozAppearance: 'textfield' }}
                   />
-                  <button type="button" onClick={incrementQty} className="w-14 h-full flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-800 transition-colors border-l border-slate-700 font-bold text-lg select-none">
-                    +
-                  </button>
+                  <button type="button" onClick={incrementQty} className="w-14 h-full flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-800 transition-colors border-l border-slate-700 font-bold text-lg select-none">+</button>
                 </div>
               </div>
-
             </div>
           </form>
         </div>
 
-
-        {/* ======================================================== */}
-        {/* RIGHT COLUMN: ORDER RECEIPT */}
-        {/* ======================================================== */}
         <div className="lg:col-span-5 bg-[#0b1120] rounded-[2rem] p-6 sm:p-8 shadow-2xl flex flex-col justify-between sticky top-24 border border-slate-800/80 min-h-[480px]">
-          
           <div>
             <div className="flex items-center justify-between mb-8 border-b border-slate-800/50 pb-6">
               <div className="flex items-center gap-3">
@@ -365,15 +345,12 @@ export default function NewOrderPage() {
               </div>
             </div>
 
-            {/* Content Receipt */}
             {!currentProduct ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <div className="w-16 h-16 bg-slate-800/50 border border-slate-700 rounded-2xl flex items-center justify-center mb-4">
                   <svg className="w-8 h-8 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
                 </div>
-                <p className="text-slate-400 text-sm max-w-[200px] leading-relaxed">
-                  Pilih produk di samping untuk melihat rincian.
-                </p>
+                <p className="text-slate-400 text-sm max-w-[200px] leading-relaxed">Pilih produk di samping untuk melihat rincian.</p>
               </div>
             ) : (
               <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
@@ -411,15 +388,10 @@ export default function NewOrderPage() {
               </p>
             </div>
 
-            {/* KONDISI TOMBOL BAWAH */}
             {!currentProduct ? (
-              <button disabled className="w-full py-4 rounded-2xl text-sm font-bold tracking-wide transition-all bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700">
-                PILIH PRODUK DAHULU
-              </button>
+              <button disabled className="w-full py-4 rounded-2xl text-sm font-bold tracking-wide transition-all bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700">PILIH PRODUK DAHULU</button>
             ) : isOutOfStock ? (
-              <button disabled className="w-full py-4 rounded-2xl text-sm font-bold tracking-wide transition-all bg-rose-500/10 text-rose-400 cursor-not-allowed border border-rose-500/20">
-                STOK PRODUK HABIS
-              </button>
+              <button disabled className="w-full py-4 rounded-2xl text-sm font-bold tracking-wide transition-all bg-rose-500/10 text-rose-400 cursor-not-allowed border border-rose-500/20">STOK PRODUK HABIS</button>
             ) : isInsufficientBalance ? (
               <div className="w-full py-4 rounded-2xl text-sm font-bold tracking-wide transition-all bg-rose-500/10 text-rose-500 border border-rose-500/20 flex items-center justify-center gap-2">
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
@@ -439,11 +411,10 @@ export default function NewOrderPage() {
                 {isSubmitting ? 'Order Processing...' : 'Order Confirmation'}
               </button>
             )}
-
           </div>
 
         </div>
-        
+
       </div>
     </div>
   );
