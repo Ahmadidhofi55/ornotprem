@@ -17,6 +17,8 @@ interface Transaction {
   total_price: number;
   payment_status: string;
   delivery_status: string;
+  digital_account_details?: string;
+  api_response_log?: string;
   created_at: string;
 }
 
@@ -25,6 +27,10 @@ export default function OrderHistoryPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
+
+  const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     const fetchHistory = async () => {
@@ -55,14 +61,27 @@ export default function OrderHistoryPage() {
     fetchHistory();
   }, [router]);
 
+  const handleOpenDetail = (tx: Transaction) => {
+    setSelectedTx(tx);
+    setIsModalOpen(true);
+    setCopied(false);
+  };
+
+  const handleCopyAccountData = () => {
+    if (selectedTx?.digital_account_details) {
+      navigator.clipboard.writeText(selectedTx.digital_account_details);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
   return (
-    <div className="max-w-6xl mx-auto w-full pb-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div className="max-w-6xl mx-auto w-full pb-10 animate-in fade-in slide-in-from-bottom-4 duration-700 relative">
       
-      {/* HEADER PAGE */}
       <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-black text-white tracking-tight">Riwayat Transaksi</h1>
-          <p className="text-sm text-slate-400 mt-1">Daftar pesanan produk yang pernah kamu buat.</p>
+          <p className="text-sm text-slate-400 mt-1">Daftar pesanan produk dan detail akun yang pernah kamu beli.</p>
         </div>
         <button 
           onClick={() => router.push('/dashboard/orders')}
@@ -72,14 +91,12 @@ export default function OrderHistoryPage() {
         </button>
       </div>
 
-      {/* ERROR MESSAGE */}
       {errorMessage && (
         <div className="mb-6 p-4 bg-rose-500/10 border border-rose-500/20 text-rose-400 rounded-xl text-sm">
           {errorMessage}
         </div>
       )}
 
-      {/* TABLE / CONTENT */}
       <div className="bg-[#1e293b] rounded-[2rem] border border-slate-700/50 shadow-2xl overflow-hidden">
         {isLoading ? (
           <div className="flex items-center justify-center py-20 text-slate-400 text-sm gap-3">
@@ -92,7 +109,7 @@ export default function OrderHistoryPage() {
               <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
             </div>
             <p className="text-slate-300 font-bold mb-1">Belum ada transaksi</p>
-            <p className="text-slate-400 text-sm max-w-sm">Kamu belum pernah melakukan checkout produk. Silakan buat pesanan pertamamu.</p>
+            <p className="text-slate-400 text-sm max-w-sm">Kamu belum pernah melakukan checkout produk.</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -104,6 +121,7 @@ export default function OrderHistoryPage() {
                   <th className="py-4 px-6">Tujuan (WA)</th>
                   <th className="py-4 px-6">Total Harga</th>
                   <th className="py-4 px-6 text-center">Status</th>
+                  <th className="py-4 px-6 text-center">Aksi</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-700/40 text-sm">
@@ -129,6 +147,14 @@ export default function OrderHistoryPage() {
                         {tx.delivery_status}
                       </span>
                     </td>
+                    <td className="py-4 px-6 text-center">
+                      <button 
+                        onClick={() => handleOpenDetail(tx)}
+                        className="bg-slate-800 hover:bg-slate-700 text-indigo-400 hover:text-indigo-300 px-3.5 py-1.5 rounded-xl text-xs font-bold border border-slate-700 transition-all shadow-md"
+                      >
+                        Lihat Detail
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -136,6 +162,63 @@ export default function OrderHistoryPage() {
           </div>
         )}
       </div>
+
+      {isModalOpen && selectedTx && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-[#1e293b] border border-slate-700 w-full max-w-lg rounded-[2rem] p-6 sm:p-8 shadow-2xl relative">
+            
+            <div className="flex justify-between items-center mb-6 pb-4 border-b border-slate-700/60">
+              <div>
+                <h3 className="text-xl font-black text-white">Detail Akun / Pesanan</h3>
+                <p className="text-xs text-slate-400 font-mono mt-0.5">{selectedTx.invoice_number}</p>
+              </div>
+              <button 
+                onClick={() => setIsModalOpen(false)}
+                className="w-9 h-9 bg-slate-800 hover:bg-slate-700 rounded-xl flex items-center justify-center text-slate-400 hover:text-white transition-all"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="space-y-4 mb-6">
+              <div>
+                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Nama Produk</span>
+                <p className="text-base font-bold text-white mt-0.5">{selectedTx.product_name}</p>
+              </div>
+
+              <div>
+                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Nomor WhatsApp Tujuan</span>
+                <p className="text-sm font-semibold text-slate-200 font-mono mt-0.5">{selectedTx.customer_wa}</p>
+              </div>
+
+              <div>
+                <div className="flex justify-between items-center mb-1.5">
+                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Detail Akun (Digital Account)</span>
+                  {selectedTx.digital_account_details && (
+                    <button 
+                      onClick={handleCopyAccountData}
+                      className="text-xs font-bold text-indigo-400 hover:text-indigo-300 flex items-center gap-1 bg-indigo-500/10 px-2.5 py-1 rounded-lg border border-indigo-500/20 transition-all"
+                    >
+                      {copied ? 'Tersalin! ✓' : 'Salin Data'}
+                    </button>
+                  )}
+                </div>
+                <div className="w-full bg-[#0f172a] border border-slate-700/80 rounded-2xl p-4 text-sm font-mono text-emerald-400 whitespace-pre-wrap break-all min-h-[100px] max-h-[200px] overflow-y-auto">
+                  {selectedTx.digital_account_details || 'Belum ada detail akun digital yang dilampirkan atau pesanan diproses otomatis via WhatsApp.'}
+                </div>
+              </div>
+            </div>
+
+            <button 
+              onClick={() => setIsModalOpen(false)}
+              className="w-full py-3.5 bg-slate-800 hover:bg-slate-700 text-white rounded-2xl font-bold text-sm border border-slate-700 transition-all"
+            >
+              Tutup
+            </button>
+
+          </div>
+        </div>
+      )}
 
     </div>
   );
