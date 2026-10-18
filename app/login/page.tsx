@@ -71,7 +71,7 @@ export default function LoginPage() {
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <h2 className="text-center text-3xl font-extrabold tracking-tight text-gray-900">
-          Masuk ke Akun Anda
+          Login In to Your Account
         </h2>
       </div>
 
@@ -86,7 +86,7 @@ export default function LoginPage() {
 
           <form className="space-y-6" onSubmit={handleLogin}>
             <div>
-              <label className="block text-sm font-bold text-gray-700">Username / Full Name</label>
+              <label className="block text-sm font-bold text-gray-700">Username</label>
               <div className="mt-1">
                 <input
                   type="text"
@@ -103,7 +103,7 @@ export default function LoginPage() {
               <div className="flex items-center justify-between">
                 <label className="block text-sm font-bold text-gray-700">Password</label>
                 <Link href="/forgot-password" className="text-xs font-bold text-indigo-600 hover:text-indigo-500">
-                  Lupa password?
+                  Forgot Password?
                 </Link>
               </div>
               <div className="mt-1 relative">
@@ -140,7 +140,7 @@ export default function LoginPage() {
                 disabled={isLoading}
                 className="w-full flex justify-center py-3 px-4 border border-transparent rounded-full shadow-md text-sm font-extrabold text-white bg-gradient-to-r from-indigo-600 to-purple-700 hover:from-indigo-500 hover:to-purple-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all disabled:opacity-50"
               >
-                {isLoading ? 'Memproses Masuk...' : 'Sign In'}
+                {isLoading ? 'In Progress...' : 'Sign In'}
               </button>
             </div>
           </form>
@@ -148,9 +148,9 @@ export default function LoginPage() {
           {/* Tautan Pindah ke Register */}
           <div className="mt-6 pt-6 border-t border-gray-100 text-center">
             <p className="text-sm text-gray-600">
-              Belum punya akun?{' '}
+              Do you have an account?{' '}
               <Link href="/register" className="font-extrabold text-indigo-600 hover:text-indigo-500 underline">
-                Daftar Akun Baru
+                Register
               </Link>
             </p>
           </div>

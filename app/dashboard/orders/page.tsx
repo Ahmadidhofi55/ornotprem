@@ -5,13 +5,11 @@ import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
 
-// --- DEKLARASI GLOBAL META PIXEL ---
 declare global {
   interface Window {
     fbq: (...args: unknown[]) => void;
   }
 }
-// -----------------------------------
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
@@ -145,30 +143,32 @@ export default function NewOrderPage() {
       const session = JSON.parse(localStorage.getItem('user_session') || '{}');
       const uniqueRefId = `INV-${Date.now()}`;
 
+      // 1. Tembak Route Handler Member Order
       const res = await fetch('/api/order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          product_id: Number(currentProduct.id),
+          productId: Number(currentProduct.id),
           qty: Number(qty),
-          ref_id: uniqueRefId,
+          refId: uniqueRefId,
           target: customerWa
         })
       });
 
       const premkuData = await res.json();
-      if (!premkuData.success && !premkuData.invoice && !premkuData.data) {
-        throw new Error(premkuData.message || 'Gagal memproses pesanan ke server pusat.');
+      
+      if (!res.ok || premkuData.success === false) {
+        throw new Error(premkuData.error || premkuData.message || 'Gagal memproses pesanan ke server pusat.');
       }
 
       const totalProfitEarned = randomMarginApplied * qty;
-      const invoiceToUse = premkuData.invoice || premkuData.data?.invoice || uniqueRefId;
+      const invoiceToUse = premkuData.data?.invoice || premkuData.invoice || uniqueRefId;
       
-      // Ambil detail akun dari respons server Premku (jika ada di dalam properti account, credentials, dll)
-      const accountDetails = premkuData.account || premkuData.data?.account || premkuData.digital_account_details || null;
+      // 2. Ambil data accounts (array username/password) sesuai API Premku v3.8
+      const accountDetails = premkuData.data?.accounts || premkuData.accounts || null;
       const apiLogStr = JSON.stringify(premkuData);
 
-      // PERBAIKAN: Menyimpan data lengkap sesuai struktur database (termasuk digital_account_details & api_response_log)
+      // 3. Simpan transaksi Member ke Supabase (status PAID & SUCCESS)
       const { error: insertError } = await supabase.from('transactions').insert([{
         user_id: session.id,
         invoice_number: invoiceToUse,
@@ -187,6 +187,7 @@ export default function NewOrderPage() {
 
       if (insertError) throw new Error(insertError.message);
 
+      // 4. Potong saldo internal user di Supabase
       const newBalance = userBalance - totalPrice;
       const { data: updatedUser, error: updateError } = await supabase
         .from('users')

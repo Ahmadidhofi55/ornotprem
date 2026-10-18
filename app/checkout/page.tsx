@@ -13,7 +13,6 @@ function CheckoutForm() {
   const productName = searchParams.get('name') || 'Produk Digital';
   const displayPrice = searchParams.get('price') ? Number(searchParams.get('price')) : 0;
   
-  // Menangkap parameter gambar dari API products (image, icon, thumbnail, img)
   const rawImage = searchParams.get('image') || searchParams.get('icon') || searchParams.get('thumbnail') || searchParams.get('img');
   const productImage = rawImage && rawImage !== 'null' && rawImage !== 'undefined' && rawImage !== 'None'
     ? decodeURIComponent(rawImage) 
@@ -43,6 +42,7 @@ function CheckoutForm() {
         body: JSON.stringify({
           productId,
           productName,
+          price: displayPrice,
           customerWa: waNumber,
           customerEmail: email,
           paymentChannel,
@@ -52,8 +52,8 @@ function CheckoutForm() {
 
       const data = await res.json();
 
-      if (!res.ok) {
-        throw new Error(data.error || 'Gagal memproses pesanan');
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Gagal memproses pesanan.');
       }
 
       router.push(`/invoice/${data.invoice}`);
@@ -94,7 +94,7 @@ function CheckoutForm() {
               Nomor WhatsApp <span className="text-rose-400">*</span>
             </label>
             <input 
-              type="number" 
+              type="text" 
               required
               value={waNumber}
               onChange={(e) => setWaNumber(e.target.value)}
@@ -154,7 +154,6 @@ function CheckoutForm() {
           <h2 className="text-xl font-bold text-white mb-6">Ringkasan Pesanan</h2>
           
           <div className="flex items-center gap-4 mb-6 pb-6 border-b border-white/10">
-            {/* Bagian Ikon / Gambar Produk */}
             <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-2xl font-black text-white shadow-lg overflow-hidden flex-shrink-0 relative">
               {productImage ? (
                 /* eslint-disable-next-line @next/next/no-img-element */
@@ -176,23 +175,19 @@ function CheckoutForm() {
 
           <div className="space-y-4 text-sm font-medium mb-6">
             <div className="flex justify-between text-gray-300">
-              <span>Harga </span>
+              <span>Harga</span>
               <span>Rp {displayPrice.toLocaleString('id-ID')}</span>
             </div>
             <div className="flex justify-between text-gray-300">
               <span>Biaya Layanan</span>
               <span className="text-emerald-400">Gratis</span>
             </div>
-            <div className="flex justify-between text-gray-300">
-              <span>Kode Unik API</span>
-              <span className="text-yellow-400 italic">Dihitung saat klik Lanjutkan</span>
-            </div>
           </div>
 
           <div className="pt-6 border-t border-white/10 flex justify-between items-center">
-            <span className="text-gray-400 font-semibold">Estimasi Tagihan</span>
+            <span className="text-gray-400 font-semibold">Total Tagihan</span>
             <span className="text-3xl font-black text-white">
-              ~Rp {displayPrice.toLocaleString('id-ID')}
+              Rp {displayPrice.toLocaleString('id-ID')}
             </span>
           </div>
         </div>

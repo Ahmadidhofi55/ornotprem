@@ -1,4 +1,3 @@
-// app/invoice/[id]/page.tsx
 "use client";
 
 import { useEffect, useState, use, useRef } from 'react';
@@ -6,13 +5,11 @@ import { createClient } from '@supabase/supabase-js';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-// --- DEKLARASI GLOBAL UNTUK MENGHILANGKAN ERROR TYPESCRIPT PADA FBQ ---
 declare global {
   interface Window {
     fbq: (...args: unknown[]) => void;
   }
 }
-// ---------------------------------------------------------------------
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
@@ -24,15 +21,27 @@ interface Transaction {
   customer_wa: string;
   total_price: number;
   payment_status: string;
-  api_response_log: string;
-  digital_account_details?: string;
+  api_response_log: string | null;
+  digital_account_details?: string | null;
+}
+
+interface PremkuPayData {
+  invoice?: string;
+  amount_req?: number;
+  kode_unik?: number;
+  total_bayar?: number;
+  qr_image?: string;
+  qr_raw?: string;
+  expired_in?: string;
 }
 
 interface ApiResponseLog {
+  success?: boolean;
+  message?: string;
+  data?: PremkuPayData;
   qr_image?: string;
+  qr_raw?: string;
   kode_unik?: number;
-  product_icon?: string;
-  premku_deposit_invoice?: string;
 }
 
 export default function InvoiceInteractivePage({
@@ -49,7 +58,6 @@ export default function InvoiceInteractivePage({
   const [isLoading, setIsLoading] = useState(true);
   const [checkingPayment, setCheckingPayment] = useState(false);
 
-  // Ref untuk mencegah meta pixel menembak data dobel saat halaman direfresh
   const hasFiredPixel = useRef(false);
 
   // 1. Ambil data transaksi awal dari Supabase
@@ -67,7 +75,7 @@ export default function InvoiceInteractivePage({
           try {
             setApiLog(JSON.parse(data.api_response_log));
           } catch (e) {
-            console.error(e);
+            console.error("Gagal parse api_response_log:", e);
           }
         }
       }
@@ -77,7 +85,7 @@ export default function InvoiceInteractivePage({
     fetchTx();
   }, [invoiceId]);
 
-  // 2. Polling otomatis untuk mengecek apakah pembayaran QRIS sudah masuk
+  // 2. Polling otomatis untuk mengecek status pembayaran
   useEffect(() => {
     if (!transaction || transaction.payment_status === 'PAID') return;
 
@@ -95,7 +103,7 @@ export default function InvoiceInteractivePage({
           setTransaction(prev => prev ? { ...prev, payment_status: 'PAID' } : null);
         }
       } catch (e) {
-        console.error("Failed to sync payment status", e);
+        console.error("Gagal sinkronisasi status pembayaran", e);
       } finally {
         setCheckingPayment(false);
       }
@@ -104,28 +112,51 @@ export default function InvoiceInteractivePage({
     return () => clearInterval(interval);
   }, [transaction, invoiceId]);
 
-  // 3. --- EFFECT KHUSUS META PIXEL "PURCHASE" ---
+  // 3. Effect khusus Meta Pixel "Purchase"
   useEffect(() => {
-    // Jika status PAID dan pixel belum ditembak
     if (transaction?.payment_status === 'PAID' && !hasFiredPixel.current) {
       if (typeof window !== 'undefined' && window.fbq) {
-        // PERBAIKAN: Membungkus total_price dengan Number() dan menambahkan content_category
         window.fbq('track', 'Purchase', {
-          value: Number(transaction.total_price), // WAJIB ANGKA
-          currency: 'IDR',                        // WAJIB ADA
+          value: Number(transaction.total_price),
+          currency: 'IDR',
           content_name: transaction.product_name,
-          content_category: 'Direct Purchase',    // TAMBAHAN AGAR RAPI DI REPORT META
+          content_category: 'Direct Purchase',
           order_id: invoiceId
         });
         console.log("🔥 Meta Pixel 'Purchase' Event Fired!");
       }
-      // Kunci ref agar tidak tertembak lagi jika re-render
       hasFiredPixel.current = true;
     }
   }, [transaction, invoiceId]);
-  // ----------------------------------------------
 
-  // --- TAMPILAN LOADING ---
+  // Helper untuk mendapatkan gambar QRIS dari berbagai struktur JSON Premku
+  const getQrImageUrl = (): string | null => {
+    if (!apiLog) return null;
+
+    // A. Cek di apiLog.data.qr_image atau apiLog.qr_image (Base64 atau Image URL)
+    const img = apiLog.data?.qr_image || apiLog.qr_image;
+    if (img) return img;
+
+    // B. Cek di apiLog.data.qr_raw atau apiLog.qr_raw (String QR Raw)
+    const raw = apiLog.data?.qr_raw || apiLog.qr_raw;
+    if (raw) {
+      if (raw.startsWith('data:image')) return raw;
+      // Generate QR Code otomatis dari string raw QRIS jika berbentuk string teks (EMVCo)
+      return `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(raw)}`;
+    }
+
+    return null;
+  };
+
+  // Helper untuk mendapatkan Kode Unik
+  const getKodeUnik = (): number | null => {
+    if (!apiLog) return null;
+    return apiLog.data?.kode_unik ?? apiLog.kode_unik ?? null;
+  };
+
+  const qrImageUrl = getQrImageUrl();
+  const kodeUnik = getKodeUnik();
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[#0a0a0a] text-cyan-400 flex items-center justify-center font-bold animate-pulse">
@@ -134,7 +165,6 @@ export default function InvoiceInteractivePage({
     );
   }
 
-  // --- TAMPILAN 404 (JIKA INVOICE TIDAK ADA) ---
   if (!transaction) {
     return (
       <div className="min-h-screen bg-[#0a0a0a] flex flex-col items-center justify-center p-6 text-center text-white">
@@ -185,22 +215,21 @@ export default function InvoiceInteractivePage({
                   <p className="text-xs text-gray-500 font-medium mb-1">Nomor WhatsApp Tujuan</p>
                   <p className="text-white font-medium">{transaction.customer_wa}</p>
                 </div>
-                {apiLog?.kode_unik && !isPaid && (
+                {kodeUnik !== null && !isPaid && (
                   <div>
                     <p className="text-xs text-gray-500 font-medium mb-1">Kode Unik Transfer</p>
-                    <p className="text-yellow-400 font-bold">+{apiLog.kode_unik}</p>
+                    <p className="text-yellow-400 font-bold">+{kodeUnik}</p>
                   </div>
                 )}
                 <div className="pt-4 border-t border-white/10 mt-4">
                   <p className="text-sm text-gray-400 font-medium mb-1">Total Tagihan (Pas)</p>
                   <p className="text-3xl font-black text-cyan-400">
-                    Rp {transaction.total_price.toLocaleString('id-ID')}
+                    Rp {Number(transaction.total_price).toLocaleString('id-ID')}
                   </p>
                 </div>
               </div>
             </div>
 
-            {/* Tombol Cek Akun (Hanya Muncul Jika Sudah Lunas) */}
             {isPaid && (
               <div className="mt-8 pt-6 border-t border-white/10">
                 <button
@@ -216,7 +245,6 @@ export default function InvoiceInteractivePage({
           {/* KOLOM KANAN: QRIS / STATUS LUNAS */}
           <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-8 rounded-[2rem] shadow-xl flex flex-col items-center justify-center text-center">
             {isPaid ? (
-              // Tampilan Saat Lunas
               <div className="text-emerald-400 flex flex-col items-center py-6">
                 <div className="w-20 h-20 bg-emerald-500/20 rounded-full flex items-center justify-center mb-4 border border-emerald-500/30">
                   <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -235,23 +263,22 @@ export default function InvoiceInteractivePage({
                 </Link>
               </div>
             ) : (
-              // Tampilan Saat Belum Lunas (Menampilkan QRIS)
               <>
                 <h2 className="text-xl font-bold text-white mb-2">Scan QRIS</h2>
                 <p className="text-gray-400 text-sm mb-6">Scan menggunakan aplikasi bank atau e-wallet apa saja. Halaman akan berubah otomatis saat lunas.</p>
 
-                {apiLog?.qr_image ? (
+                {qrImageUrl ? (
                   <div className="bg-white p-4 rounded-3xl shadow-2xl mb-6">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                      src={apiLog.qr_image}
+                      src={qrImageUrl}
                       alt="QRIS Pembayaran"
                       className="w-48 h-48 md:w-56 md:h-56 object-contain"
                     />
                   </div>
                 ) : (
-                  <div className="w-56 h-56 bg-white/10 rounded-3xl mb-6 flex items-center justify-center text-gray-500 border border-white/10">
-                    QRIS tidak tersedia
+                  <div className="w-56 h-56 bg-white/10 rounded-3xl mb-6 flex items-center justify-center text-gray-500 border border-white/10 text-xs px-4 text-center">
+                    QRIS tidak tersedia / gagal dimuat
                   </div>
                 )}
 

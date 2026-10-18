@@ -3,119 +3,87 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
-interface PremkuProduct {
-  id: number | string;
-  name: string;
-  price: number | string;
-}
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { productId, productName, customerWa, customerEmail, paymentChannel, productImage } = body;
+    const { 
+      productId, 
+      productName, 
+      customerWa, 
+      customerEmail, 
+      paymentChannel, 
+      price 
+    } = body;
 
     if (!productId || !customerWa) {
-      return NextResponse.json({ error: 'Data tidak lengkap' }, { status: 400 });
+      return NextResponse.json(
+        { success: false, error: 'ID Produk dan Nomor WhatsApp wajib diisi.' },
+        { status: 400 }
+      );
     }
 
-    // 1. Ambil Setting Harga dari Supabase
-    const { data: settingsData } = await supabase.from('settings').select('key_name, value').in('key_name', ['min_margin', 'max_margin']);
-    let minMargin = 500;
-    let maxMargin = 1000;
-    if (settingsData) {
-      const minS = settingsData.find(s => s.key_name === 'min_margin');
-      const maxS = settingsData.find(s => s.key_name === 'max_margin');
-      if (minS) minMargin = Number(minS.value);
-      if (maxS) maxMargin = Number(maxS.value);
+    const invoiceNumber = `INV-GUEST-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`;
+
+    let qrData = null;
+    const basePrice = Number(price) || 0;
+    const margin = 0;
+    let totalBayar = basePrice + margin;
+    let rawPayLog = null;
+
+    // 1. Request QRIS ke API Premku (/api/pay)
+    if (paymentChannel === 'QRIS' && totalBayar > 0) {
+      const payRes = await fetch('https://premku.com/api/pay', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          api_key: process.env.PREMKU_API_KEY || '',
+          amount: totalBayar
+        })
+      });
+
+      const payResult = await payRes.json();
+      rawPayLog = JSON.stringify(payResult);
+
+      if (payResult.success && payResult.data) {
+        qrData = payResult.data.qr_image || payResult.data.qr_raw;
+        totalBayar = payResult.data.total_bayar || totalBayar;
+      }
     }
 
-    // 2. Ambil Harga Modal Asli dari Premku
-    const premkuRes = await fetch('https://premku.com/api/products', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.PREMKU_API_KEY as string },
-      body: JSON.stringify({}),
-      cache: 'no-store'
+    // 2. Simpan QRIS ke kolom api_response_log agar halaman Invoice bisa membacanya dari Supabase
+    const { error: dbError } = await supabase.from('transactions').insert([{
+      user_id: null,
+      invoice_number: invoiceNumber,
+      api_product_id: String(productId),
+      product_name: productName || 'Produk Digital',
+      customer_wa: customerWa,
+      customer_email: customerEmail || null,
+      base_price: basePrice,
+      margin: margin,
+      total_price: totalBayar,
+      payment_channel: paymentChannel || 'QRIS',
+      payment_status: 'PENDING',
+      delivery_status: 'PENDING',
+      api_response_log: rawPayLog // <-- Menyimpan log response API Premku yang berisi QRIS
+    }]);
+
+    if (dbError) {
+      throw new Error(`Gagal menyimpan transaksi: ${dbError.message}`);
+    }
+
+    return NextResponse.json({
+      success: true,
+      invoice: invoiceNumber,
+      message: 'Checkout berhasil dibuat.',
+      totalBayar,
+      qrData
     });
-    
-    if (!premkuRes.ok) throw new Error('Gagal terhubung ke server pusat');
-    const premkuData = await premkuRes.json();
-    const rawProducts = Array.isArray(premkuData) ? premkuData : (premkuData.data || premkuData.products || []);
-    
-    const product = rawProducts.find((p: PremkuProduct) => String(p.id) === String(productId));
-    if (!product) throw new Error('Produk tidak ditemukan atau tidak tersedia');
-
-    // 3. Kalkulasi Harga Dasar (Harga Asli + Margin)
-    const basePrice = Number(product.price);
-    const brandName = product.name ? product.name.split(' ')[0].toLowerCase() : 'lainnya';
-    const diff = maxMargin - minMargin;
-    const steps = diff > 0 ? Math.floor(diff / 100) + 1 : 1;
-    
-    let hash = 0;
-    for (let i = 0; i < brandName.length; i++) hash = brandName.charCodeAt(i) + ((hash << 5) - hash);
-    const margin = minMargin + (Math.abs(hash) % steps) * 100;
-    const initialTotalPrice = basePrice + margin;
-
-    // 4. REQUEST QRIS & KODE UNIK KE API PREMKU (Deposit)
-    const payRes = await fetch('https://premku.com/api/pay', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        api_key: process.env.PREMKU_API_KEY as string,
-        amount: initialTotalPrice
-      }),
-      cache: 'no-store'
-    });
-
-    const payData = await payRes.json();
-    if (!payData.success) {
-      throw new Error(payData.message || 'Gagal men-generate QRIS Pembayaran');
-    }
-
-    // Ambil data penting dari respon API Premku
-    const { invoice: premkuDepositInvoice, total_bayar, kode_unik, qr_image } = payData.data;
-
-    // 5. Generate Nomor Invoice ORNOT PREM
-    const invoiceNumber = `INV-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-
-    // 6. Simpan ke Database Supabase (Menyimpan gambar icon & QRIS di log)
-    const { data: txData, error: txError } = await supabase
-      .from('transactions')
-      .insert([
-        {
-          invoice_number: invoiceNumber,
-          api_product_id: String(productId),
-          product_name: product.name || productName,
-          customer_wa: customerWa,
-          customer_email: customerEmail || null,
-          base_price: basePrice,
-          margin: margin,
-          total_price: total_bayar, // Total sudah termasuk kode unik dari API
-          payment_channel: paymentChannel || 'QRIS',
-          payment_status: 'UNPAID',
-          delivery_status: 'PENDING',
-          // Kita titipkan data QRIS dan Ikon di kolom ini agar bisa dipanggil di halaman Invoice
-          api_response_log: JSON.stringify({
-            premku_deposit_invoice: premkuDepositInvoice,
-            kode_unik: kode_unik,
-            qr_image: qr_image,
-            product_icon: productImage
-          })
-        }
-      ])
-      .select()
-      .single();
-
-    if (txError) throw txError;
-
-    return NextResponse.json({ success: true, invoice: txData.invoice_number });
 
   } catch (error: unknown) {
-    if (error instanceof Error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-    return NextResponse.json({ error: 'Terjadi kesalahan sistem' }, { status: 500 });
+    const message = error instanceof Error ? error.message : 'Terjadi kesalahan sistem.';
+    return NextResponse.json({ success: false, error: message }, { status: 500 });
   }
 }

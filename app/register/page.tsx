@@ -78,7 +78,7 @@ export default function RegisterPage() {
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <h2 className="text-center text-3xl font-extrabold tracking-tight text-gray-900">
-          Buat Akun Baru
+          Register a New Account
         </h2>
       </div>
 
@@ -93,7 +93,7 @@ export default function RegisterPage() {
 
           <form className="space-y-6" onSubmit={handleRegister}>
             <div>
-              <label className="block text-sm font-bold text-gray-700">Full Name</label>
+              <label className="block text-sm font-bold text-gray-700">Username</label>
               <div className="mt-1">
                 <input
                   type="text"
@@ -107,7 +107,7 @@ export default function RegisterPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-gray-700">Nomor WhatsApp</label>
+              <label className="block text-sm font-bold text-gray-700">WhatsApp Number</label>
               <div className="mt-1">
                 <input
                   type="number"
@@ -140,16 +140,16 @@ export default function RegisterPage() {
                 disabled={isLoading}
                 className="w-full flex justify-center py-3 px-4 border border-transparent rounded-full shadow-md text-sm font-extrabold text-white bg-gradient-to-r from-indigo-600 to-purple-700 hover:from-indigo-500 hover:to-purple-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all disabled:opacity-50"
               >
-                {isLoading ? 'Mendaftarkan...' : 'Daftar Sekarang'}
+                {isLoading ? 'In Progress...' : 'Register'}
               </button>
             </div>
           </form>
 
           <div className="mt-6 pt-6 border-t border-gray-100 text-center">
             <p className="text-sm text-gray-600">
-              Sudah punya akun?{' '}
+              Do you have an account?{' '}
               <Link href="/login" className="font-extrabold text-indigo-600 hover:text-indigo-500 underline">
-                Masuk di sini
+                Login
               </Link>
             </p>
           </div>
