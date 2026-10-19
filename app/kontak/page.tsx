@@ -6,7 +6,7 @@ import type { Metadata } from 'next';
 export const metadata: Metadata = {
   title: 'Hubungi Kami & Layanan Pelanggan 24/7 | Ornot Prem',
   description: 'Punya kendala pesanan, klaim garansi akun premium, atau ingin kerja sama? Hubungi tim dukungan ORNOT PREM via WhatsApp atau Email.',
-  keywords: ['kontak ornot prem', 'hubungi ornot prem', 'whatsapp ornot prem', 'customer service akun premium', 'bantuan ornot prem'],
+  keywords: ['Contact ornot prem', 'hubungi ornot prem', 'whatsapp ornot prem', 'customer service akun premium', 'bantuan ornot prem'],
   openGraph: {
     title: 'Hubungi Kami - Ornot Prem',
     description: 'Layanan pelanggan siap membantu Anda 24/7 untuk kendala transaksi dan garansi akun.',
@@ -57,7 +57,7 @@ export default function ContactPage() {
               <h3 className="text-lg font-bold text-white mb-1">WhatsApp Resmi</h3>
               <p className="text-xs text-gray-400 mb-4">Respon cepat untuk klaim garansi & bantuan transaksi.</p>
               <a 
-                href="https://wa.me/6285724486120" 
+                href="https://wa.me/62895402137562" 
                 target="_blank" 
                 rel="noopener noreferrer" 
                 className="inline-flex items-center gap-2 text-emerald-400 font-bold text-sm hover:underline"
@@ -73,7 +73,7 @@ export default function ContactPage() {
               </div>
               <h3 className="text-lg font-bold text-white mb-1">Email Dukungan</h3>
               <p className="text-xs text-gray-400 mb-4">Untuk kerja sama bisnis atau pertanyaan administratif.</p>
-              <span className="text-white font-medium text-sm">support@ornotgroup.my.id</span>
+              <span className="text-white font-medium text-sm">smg0881@gmail.com</span>
             </div>
 
             {/* Jam Operasional */}
@@ -126,7 +126,7 @@ export default function ContactPage() {
             <div className="pt-4 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
               <p className="text-xs text-gray-500">Butuh respons cepat? Langsung chat via WhatsApp.</p>
               <a 
-                href="https://wa.me/6285724486120" 
+                href="https://wa.me/62895402137562" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="w-full sm:w-auto bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold px-6 py-3 rounded-full transition-all text-center text-sm shadow-lg"
