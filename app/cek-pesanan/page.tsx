@@ -41,14 +41,7 @@ function CekPesananContent() {
     setTransaction(null);
 
     try {
-      // 1. Panggil API server-side untuk memaksa update status menjadi PAID
-      await fetch('/api/check-payment-alt', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ invoiceNumber: cleanInvoice })
-      });
-
-      // 2. Ambil data terbaru dari Supabase
+      // Ambil data transaksi terbaru dari Supabase tanpa mengubah statusnya
       const { data, error } = await supabase
         .from('transactions')
         .select('*')
@@ -94,7 +87,8 @@ function CekPesananContent() {
     handleSearch(inputInvoice);
   };
 
-  const isPaid = (transaction?.payment_status || '').toUpperCase() === 'PAID';
+  const statusUpper = (transaction?.payment_status || '').toUpperCase();
+  const isPaid = statusUpper === 'PAID' || statusUpper === 'SUCCESS';
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -174,7 +168,10 @@ function CekPesananContent() {
           <div>
             <p className="text-xs text-gray-400 mb-2">Detail Akun</p>
             <div className="bg-black/50 border border-cyan-500/30 p-5 rounded-xl font-mono text-sm text-cyan-300 whitespace-pre-wrap leading-relaxed">
-              {transaction.digital_account_details || 'Akun sedang disiapkan dan dikirimkan otomatis ke WhatsApp Anda.'}
+              {isPaid 
+                ? (transaction.digital_account_details || 'Akun sedang disiapkan dan dikirimkan otomatis ke WhatsApp Anda.')
+                : 'Selesaikan pembayaran terlebih dahulu untuk melihat detail akun.'
+              }
             </div>
           </div>
 
