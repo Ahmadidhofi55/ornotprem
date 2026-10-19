@@ -259,11 +259,11 @@ export default async function PriceListPage({
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="border-b border-white/10 bg-white/[0.02] text-gray-400 text-[11px] font-bold uppercase tracking-wider">
-                    <th className="py-5 px-6 w-[40%]">Nama Aplikasi / Paket</th>
-                    <th className="py-5 px-6">Tipe Akun</th>
-                    <th className="py-5 px-6">Status Stok</th>
-                    <th className="py-5 px-6 text-right">Harga</th>
-                    <th className="py-5 px-6 text-center">Aksi</th>
+                    <th className="py-5 px-6 w-[40%]">Application Name</th>
+                    <th className="py-5 px-6">Account Type</th>
+                    <th className="py-5 px-6">Stock</th>
+                    <th className="py-5 px-6 text-right">Price</th>
+                    <th className="py-5 px-6 text-center">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5 text-sm">

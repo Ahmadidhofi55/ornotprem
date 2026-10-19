@@ -42,18 +42,6 @@ const CATEGORIES = [
   { id: 'apps-tools', label: 'Apps & Tools', icon: '💼' }
 ];
 
-const getCardGradient = (index: number) => {
-  const gradients = [
-    'from-cyan-400 to-blue-600',
-    'from-green-400 to-emerald-600',
-    'from-red-500 to-rose-700',
-    'from-purple-500 to-indigo-700',
-    'from-amber-400 to-orange-600',
-    'from-teal-400 to-emerald-600'
-  ];
-  return gradients[index % gradients.length];
-};
-
 export default async function HomePage({ 
   searchParams 
 }: { 
@@ -227,7 +215,7 @@ export default async function HomePage({
               Sistem Aktif 24/7
             </span>
           </div>
-          <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6">
+          <h1 className="text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight mb-4 sm:mb-6">
             Upgrade Akunmu. <br className="hidden md:block" />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600">
               Tanpa Bikin Kantong Bolong.
@@ -235,7 +223,7 @@ export default async function HomePage({
           </h1>
         </header>
 
-        {/* --- INJEKSI KOMPONEN WIDGET PENCARIAN & LACAK --- */}
+        {/* WIDGET PENCARIAN & LACAK */}
         <HomeWidgets />
 
         {debugError && (
@@ -245,8 +233,8 @@ export default async function HomePage({
           </div>
         )}
 
-        {/* KATEGORI TABS SECTION */}
-        <section aria-label="Kategori Produk" className="mt-4 flex flex-wrap justify-center gap-3">
+        {/* KATEGORI TABS SECTION (Scrollable Horizontal di Mobile) */}
+        <section aria-label="Kategori Produk" className="mt-6 flex overflow-x-auto gap-2.5 py-2 px-1 sm:justify-center whitespace-nowrap scrollbar-none">
           {CATEGORIES.map((category) => (
             <Link
               key={category.id}
@@ -256,9 +244,9 @@ export default async function HomePage({
                   : `/?category=${category.id}${searchQuery ? `&q=${searchQuery}` : ''}`
               }
               title={`Kategori ${category.label}`}
-              className={`px-5 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 flex items-center gap-2 ${
+              className={`shrink-0 px-4 py-2 sm:px-5 sm:py-2.5 rounded-2xl sm:rounded-full text-xs sm:text-sm font-semibold transition-all duration-300 flex items-center gap-2 ${
                 activeCategory === category.id
-                  ? 'bg-white text-black shadow-[0_0_20px_rgba(255,255,255,0.3)] scale-105'
+                  ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg shadow-cyan-500/20 scale-105'
                   : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white border border-white/5'
               }`}
             >
@@ -268,8 +256,8 @@ export default async function HomePage({
           ))}
         </section>
 
-        {/* GRID PRODUK SECTION */}
-        <section aria-label="Daftar Akun Premium" className="mt-10 max-w-5xl mx-auto">
+        {/* GRID PRODUK SECTION (2 Kolom di Mobile, 3/4 Kolom di Tablet & PC) */}
+        <section aria-label="Daftar Akun Premium" className="mt-8 max-w-5xl mx-auto">
           {filteredProducts.length === 0 ? (
             <div className="text-center py-20 text-gray-400 bg-white/5 rounded-3xl border border-white/10 mt-6">
               <span className="text-4xl mb-4 block">🔍</span>
@@ -282,9 +270,8 @@ export default async function HomePage({
               )}
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6">
-              {filteredProducts.map((product, index) => {
-                const cardGradient = getCardGradient(index);
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-3 sm:gap-6">
+              {filteredProducts.map((product) => {
                 const imageUrl = product.image || product.icon;
                 
                 return (
@@ -294,16 +281,22 @@ export default async function HomePage({
                     title={`Beli Akun Premium ${product.brandName}`}
                     className="group block h-full"
                   >
-                    <article className="relative h-full bg-white/5 backdrop-blur-sm border border-white/10 p-6 rounded-3xl overflow-hidden transition-all duration-500 hover:-translate-y-2 hover:bg-white/[0.07] hover:border-white/20">
-                      <div className={`absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity duration-500 bg-gradient-to-br ${cardGradient}`}></div>
+                    <article className="relative h-full bg-white/5 backdrop-blur-sm border border-white/10 p-3 sm:p-5 rounded-3xl overflow-hidden transition-all duration-300 hover:-translate-y-1.5 hover:bg-white/[0.08] hover:border-cyan-500/40 flex flex-col justify-between text-center">
+                      
+                      {/* Kontainer Gambar & Badge Atas */}
+                      <div className="relative w-full aspect-square rounded-2xl bg-black/40 border border-white/5 p-2 sm:p-3 flex items-center justify-center mb-3">
+                        {/* Badge Hot/Auto */}
+                        <span className="absolute top-2 right-2 bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 text-[9px] sm:text-[10px] font-black px-2 py-0.5 rounded-lg uppercase tracking-wider">
+                          {product.type || 'AUTO'}
+                        </span>
 
-                      <div className="flex justify-between items-start mb-12 relative z-10">
-                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-white text-2xl font-bold shadow-lg overflow-hidden relative ${!imageUrl ? `bg-gradient-to-br ${cardGradient}` : 'bg-transparent'}`}>
+                        {/* Logo Produk */}
+                        <div className="w-14 h-14 sm:w-20 sm:h-20 rounded-2xl overflow-hidden flex items-center justify-center text-white text-2xl font-black relative">
                           {imageUrl ? (
                             /* eslint-disable-next-line @next/next/no-img-element */
                             <img 
                               src={imageUrl} 
-                              alt={`Beli Akun Premium ${product.brandName} Murah`} 
+                              alt={`Beli Akun Premium ${product.brandName}`} 
                               loading="lazy"
                               decoding="async"
                               className="w-full h-full object-cover rounded-2xl"
@@ -312,30 +305,27 @@ export default async function HomePage({
                             product.brandName.charAt(0)
                           )}
                         </div>
-                        
-                        <span className="bg-white/10 text-gray-300 text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-wider border border-white/5">
-                          {product.type || 'PILIH PAKET'}
-                        </span>
                       </div>
 
-                      <div className="relative z-10 flex flex-col">
-                        <h2 className="text-xl font-bold text-white mb-1 group-hover:text-cyan-400 transition-colors">
+                      {/* Detail Teks Terpusat */}
+                      <div className="flex flex-col items-center">
+                        <span className="text-[10px] sm:text-xs font-bold text-cyan-400 tracking-wider uppercase mb-1">
+                          DESAIN & MEDIA
+                        </span>
+                        
+                        <h2 className="text-sm sm:text-base font-bold text-white group-hover:text-cyan-400 transition-colors line-clamp-1 mb-2">
                           {product.brandName}
                         </h2>
-                        <div className="flex justify-between items-end mt-4">
-                          <div>
-                            <span className="text-xs text-gray-500 font-medium">Mulai dari</span>
-                            <p className="text-2xl font-black text-white">
-                              Rp {product.minPrice.toLocaleString('id-ID')}
-                            </p>
-                          </div>
-                          <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center group-hover:bg-cyan-500 group-hover:text-black transition-all duration-300">
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                            </svg>
-                          </div>
+                        
+                        {/* Kotak Harga Terbungkus Rapi */}
+                        <div className="w-full mt-1 py-1.5 px-2 bg-white/5 border border-white/5 rounded-xl text-center">
+                          <span className="text-[10px] text-gray-400 block font-medium">Mulai dari</span>
+                          <p className="text-xs sm:text-sm font-black text-white">
+                            Rp {product.minPrice.toLocaleString('id-ID')}
+                          </p>
                         </div>
                       </div>
+
                     </article>
                   </Link>
                 );

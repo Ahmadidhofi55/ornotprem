@@ -120,7 +120,7 @@ function CekPesananContent() {
                 disabled={isLoading}
                 className="bg-cyan-500 hover:bg-cyan-400 text-black font-extrabold px-8 py-4 rounded-xl transition-all shadow-lg shadow-cyan-500/20 disabled:opacity-50 cursor-pointer"
               >
-                {isLoading ? 'Mencari...' : 'Cari'}
+                {isLoading ? 'Finding...' : 'Cari'}
               </button>
             </div>
           </div>
@@ -172,7 +172,7 @@ function CekPesananContent() {
           </div>
 
           <div>
-            <p className="text-xs text-gray-400 mb-2">Detail Akun / Status Pengiriman</p>
+            <p className="text-xs text-gray-400 mb-2">Detail Akun</p>
             <div className="bg-black/50 border border-cyan-500/30 p-5 rounded-xl font-mono text-sm text-cyan-300 whitespace-pre-wrap leading-relaxed">
               {transaction.digital_account_details || 'Akun sedang disiapkan dan dikirimkan otomatis ke WhatsApp Anda.'}
             </div>
