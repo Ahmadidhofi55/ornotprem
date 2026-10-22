@@ -6,8 +6,8 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const invoiceId = decodeURIComponent(resolvedParams.id);
 
   return {
-    title: `Tagihan Pembayaran ${invoiceId} | Ornot Prem`,
-    description: `Selesaikan pembayaran untuk invoice ${invoiceId} Anda. Sistem akan memproses pesanan secara otomatis segera setelah pembayaran berhasil.`,
+    title: `Payment Invoice ${invoiceId} | Ornot Prem`,
+    description: `Complete your payment for invoice ${invoiceId}. Your order will be automatically processed immediately upon successful payment.`,
     robots: {
       index: false, 
       follow: false,

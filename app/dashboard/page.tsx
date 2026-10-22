@@ -68,7 +68,7 @@ export default function UserDashboardPage() {
       <div className="flex h-[70vh] w-full items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div className="w-10 h-10 border-4 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin"></div>
-          <p className="text-sm font-medium text-slate-400 animate-pulse">Menyiapkan Dashboard...</p>
+          <p className="text-sm font-medium text-slate-400 animate-pulse">Loading Dashboard...</p>
         </div>
       </div>
     );
