@@ -228,7 +228,7 @@ export default async function HomePage({
 
         {debugError && (
           <div className="mt-4 max-w-3xl mx-auto bg-red-900/30 border border-red-500/50 p-4 rounded-2xl text-center">
-            <p className="text-red-400 font-bold mb-1">Peringatan Debugging:</p>
+            <p className="text-red-400 font-bold mb-1">Erorr:</p>
             <p className="text-red-200 text-sm">{debugError}</p>
           </div>
         )}
