@@ -20,8 +20,8 @@ export async function POST(req: Request) {
 
     if (!productId || !customerWa) {
       return NextResponse.json(
-        { success: false, error: 'ID Produk dan Nomor WhatsApp wajib diisi.' },
-        { status: 400 }
+          { success: false, error: 'ID Produk dan Nomor WhatsApp wajib diisi.' },
+          { status: 400 }
       );
     }
 
@@ -71,19 +71,19 @@ export async function POST(req: Request) {
     }]);
 
     if (dbError) {
-      throw new Error(`Gagal menyimpan transaksi: ${dbError.message}`);
+      throw new Error(`Failed to save transaction: ${dbError.message}`);
     }
 
     return NextResponse.json({
       success: true,
       invoice: invoiceNumber,
-      message: 'Checkout berhasil dibuat.',
+      message: 'Checkout successful.',
       totalBayar,
       qrData
     });
 
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Terjadi kesalahan sistem.';
+    const message = error instanceof Error ? error.message : 'An error occurred.';
     return NextResponse.json({ success: false, error: message }, { status: 500 });
   }
 }

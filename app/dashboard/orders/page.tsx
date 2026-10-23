@@ -142,8 +142,6 @@ export default function NewOrderPage() {
     try {
       const session = JSON.parse(localStorage.getItem('user_session') || '{}');
       const uniqueRefId = `INV-${Date.now()}`;
-
-      // 1. Tembak Route Handler Member Order
       const res = await fetch('/api/order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -164,11 +162,9 @@ export default function NewOrderPage() {
       const totalProfitEarned = randomMarginApplied * qty;
       const invoiceToUse = premkuData.data?.invoice || premkuData.invoice || uniqueRefId;
       
-      // 2. Ambil data accounts (array username/password) sesuai API Premku v3.8
       const accountDetails = premkuData.data?.accounts || premkuData.accounts || null;
       const apiLogStr = JSON.stringify(premkuData);
 
-      // 3. Simpan transaksi Member ke Supabase (status PAID & SUCCESS)
       const { error: insertError } = await supabase.from('transactions').insert([{
         user_id: session.id,
         invoice_number: invoiceToUse,
@@ -187,7 +183,6 @@ export default function NewOrderPage() {
 
       if (insertError) throw new Error(insertError.message);
 
-      // 4. Potong saldo internal user di Supabase
       const newBalance = userBalance - totalPrice;
       const { data: updatedUser, error: updateError } = await supabase
         .from('users')
@@ -209,7 +204,7 @@ export default function NewOrderPage() {
       }
 
       setUser(updatedUser);
-      setSuccessMessage(`Pesanan Berhasil! No Invoice: ${invoiceToUse}`);
+      setSuccessMessage(`Order Success! No Invoice: ${invoiceToUse}`);
       setSelectedProductId(''); 
       setQty(1); 
       setCustomerWa('');
@@ -217,7 +212,7 @@ export default function NewOrderPage() {
       if (err instanceof Error) {
         setErrorMessage(err.message);
       } else {
-        setErrorMessage('Terjadi kesalahan yang tidak diketahui.');
+        setErrorMessage('An unknown error occurred.');
       }
     } finally {
       setIsSubmitting(false);
@@ -267,7 +262,7 @@ export default function NewOrderPage() {
               {isLoadingProducts ? (
                 <div className="w-full bg-[#0f172a] border border-slate-700 rounded-2xl px-4 py-4 text-sm text-slate-500 flex items-center gap-3">
                   <div className="w-4 h-4 border-2 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin"></div>
-                  Memuat katalog produk...
+                  Loading product catalog...
                 </div>
               ) : (
                 <div className="relative">

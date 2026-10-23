@@ -144,7 +144,7 @@ export async function createProductOrder(params: OrderParams): Promise<OrderResp
       return { 
         success: true, 
         isReady: false, 
-        accountDetails: 'Pembayaran terkonfirmasi! Akun sedang diproses otomatis oleh sistem.', 
+        accountDetails: 'Payment confirmed! The account is being processed automatically by the system.', 
         rawResponse: data 
       };
     }
@@ -152,15 +152,15 @@ export async function createProductOrder(params: OrderParams): Promise<OrderResp
     return { 
       success: false, 
       isReady: false, 
-      accountDetails: 'Pembayaran terkonfirmasi! Sistem sedang memproses pengiriman akun Anda.', 
-      rawResponse: data 
+        accountDetails: 'Pembayaran terkonfirmasi! Sistem sedang memproses pengiriman akun Anda.', 
+        rawResponse: data 
     };
   } catch (e) {
     console.error("[PREMKU ORDER ERROR]:", e);
     return { 
       success: false, 
       isReady: false, 
-      accountDetails: 'Pembayaran terkonfirmasi! Akun akan dikirimkan secara berkala.' 
+      accountDetails: 'Payment confirmed! The account will be delivered periodically.' 
     };
   }
 }

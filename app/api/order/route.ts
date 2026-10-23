@@ -8,7 +8,7 @@ export async function POST(req: Request) {
 
     if (!productId) {
       return NextResponse.json(
-        { success: false, error: 'Product ID (productId) wajib diisi.' },
+        { success: false, error: 'Product ID (productId) is required.' },
         { status: 400 }
       );
     }
@@ -39,7 +39,7 @@ export async function POST(req: Request) {
       return NextResponse.json(
         { 
           success: false, 
-          error: data.message || 'Gagal memproses pesanan ke server Premku.' 
+          error: data.message || 'Failed to process order with Premku server.' 
         },
         { status: res.status >= 400 ? res.status : 400 }
       );
@@ -54,7 +54,7 @@ export async function POST(req: Request) {
     });
 
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Terjadi kesalahan sistem.';
+    const message = error instanceof Error ? error.message : 'An error occurred.';
     return NextResponse.json({ success: false, error: message }, { status: 500 });
   }
 }

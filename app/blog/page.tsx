@@ -1,5 +1,11 @@
 // app/blog/page.tsx
 import Link from 'next/link';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Blog & Edukasi | ORNOT PREM',
+  description: 'Kumpulan artikel, tips, panduan, dan informasi promo seputar aplikasi serta akun premium terpercaya.',
+};
 
 const blogPosts = [
   {
@@ -104,18 +110,18 @@ const blogPosts = [
   },
   {
     id: '11',
-    slug: 'peluang-bisnis-reseller-akun-premium',
-    title: 'Peluang Bisnis Reseller Akun Premium, Untung Jutaan Per Bulan!',
-    excerpt: 'Ingin mulai bisnis digital tanpa ribet stok barang? Bergabunglah menjadi reseller di Ornot Prem. Dapatkan harga khusus dengan margin keuntungan maksimal.',
+    slug: 'peluang-bisnis-layanan-akun-premium',
+    title: 'Peluang Usaha Digital Layanan Akun Premium, Untung Jutaan!',
+    excerpt: 'Ingin mulai bisnis digital tanpa ribet stok barang? Pelajari cara memulai usaha produk digital dengan dukungan otomatisasi dari Ornot Prem.',
     category: 'Edukasi',
     date: '5 Juli 2026',
     author: 'Ornot Group',
-    imageUrl: 'https://placehold.co/800x500/8b5cf6/ffffff?text=Peluang+Reseller&font=Montserrat',
+    imageUrl: 'https://placehold.co/800x500/8b5cf6/ffffff?text=Peluang+Digital&font=Montserrat',
   },
   {
     id: '12',
     slug: 'top-up-saldo-qris-otomatis-cepat',
-    title: 'Kemudahan Top Up Saldo via QRIS Otomatis, Masuk Dalam 5 Detik!',
+    title: 'Kemudahan Pembayaran via QRIS Otomatis, Masuk Dalam 5 Detik!',
     excerpt: 'Beli akun premium kini makin gampang. Ornot Prem mendukung pembayaran QRIS otomatis (Gopay, OVO, Dana, ShopeePay, M-Banking) tanpa perlu konfirmasi manual admin.',
     category: 'Update Info',
     date: '1 Juli 2026',
@@ -143,94 +149,109 @@ const blogPosts = [
     imageUrl: 'https://placehold.co/800x500/d83b01/ffffff?text=Office+365+Original&font=Montserrat',
   }
 ];
+
 export default function BlogPage() {
   return (
-    <div className="min-h-screen bg-[#0f172a] text-slate-300 py-12 px-4 sm:px-6 lg:px-8 font-sans selection:bg-indigo-500/30 animate-in fade-in duration-700">
+    <div className="min-h-screen bg-slate-50/60 text-gray-900 font-sans overflow-hidden relative selection:bg-indigo-500/20 pb-24">
       
-      {/* HEADER SECTION */}
-      <div className="max-w-7xl mx-auto text-center mb-16">
-        <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight mb-4">
-          Ornot<span className="text-indigo-400">Blog</span>
-        </h1>
-        <p className="text-base sm:text-lg text-slate-400 max-w-2xl mx-auto">
-          Kumpulan informasi terbaru, panduan, promo, dan tips seputar akun premium & layanan Ornot Prem.
-        </p>
-      </div>
+      {/* Background Soft Glow Aksen Indigo-Purple */}
+      <div className="absolute top-[-5%] left-1/2 -translate-x-1/2 w-[600px] h-[350px] rounded-full bg-gradient-to-b from-indigo-300/20 via-purple-300/10 to-transparent blur-[120px] pointer-events-none"></div>
 
-      {/* BLOG GRID SECTION */}
-      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {blogPosts.map((post) => (
-          <article 
-            key={post.id} 
-            className="bg-[#1e293b] rounded-3xl border border-slate-800/80 shadow-xl overflow-hidden group hover:border-indigo-500/40 hover:-translate-y-1 transition-all duration-300 flex flex-col"
-          >
-            {/* THUMBNAIL IMAGE */}
-            <Link href={`/blog/${post.slug}`} className="block relative h-52 w-full overflow-hidden bg-slate-800">
-              {/* Overlay Gradient */}
-              <div className="absolute inset-0 bg-gradient-to-t from-[#1e293b] via-transparent to-transparent z-10"></div>
-              {/* Image */}
-              <img 
-                src={post.imageUrl} 
-                alt={post.title} 
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                loading="lazy"
-              />
-              {/* Category Badge */}
-              <div className="absolute top-4 left-4 z-20">
-                <span className="bg-indigo-500/90 backdrop-blur text-white text-[10px] font-bold uppercase tracking-wider py-1 px-3 rounded-full shadow-lg">
-                  {post.category}
-                </span>
-              </div>
-            </Link>
+      <main className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10">
+        
+        {/* HEADER SECTION */}
+        <header className="text-center max-w-3xl mx-auto mb-14">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-indigo-100 text-indigo-700 text-xs font-bold tracking-wide uppercase mb-4 shadow-sm backdrop-blur-md">
+            <span className="w-2 h-2 rounded-full bg-indigo-600"></span>
+            Pusat Edukasi & Informasi
+          </div>
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-gray-900 mb-4">
+            Ornot<span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-800">Blog</span>
+          </h1>
+          <p className="text-gray-500 text-base sm:text-lg font-medium max-w-2xl mx-auto">
+            Kumpulan panduan, tips trik, promo spesial, dan wawasan terbaru seputar akun & aplikasi premium resmi.
+          </p>
+        </header>
 
-            {/* CONTENT */}
-            <div className="p-6 flex-1 flex flex-col">
-              <div className="flex items-center text-[11px] text-slate-400 font-medium mb-3 gap-2">
-                <span>{post.date}</span>
-                <span className="w-1 h-1 rounded-full bg-slate-600"></span>
-                <span>{post.author}</span>
-              </div>
-              
-              <Link href={`/blog/${post.slug}`}>
-                <h2 className="text-xl font-bold text-white leading-snug mb-3 group-hover:text-indigo-400 transition-colors line-clamp-2">
-                  {post.title}
-                </h2>
+        {/* BLOG GRID SECTION */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {blogPosts.map((post) => (
+            <article 
+              key={post.id} 
+              className="bg-white border border-gray-100 rounded-3xl overflow-hidden shadow-xl shadow-gray-200/50 hover:shadow-2xl hover:shadow-indigo-500/10 hover:border-indigo-200 hover:-translate-y-1.5 transition-all duration-300 flex flex-col group"
+            >
+              {/* THUMBNAIL IMAGE */}
+              <Link href={`/blog/${post.slug}`} className="block relative h-52 w-full overflow-hidden bg-slate-100">
+                <img 
+                  src={post.imageUrl} 
+                  alt={post.title} 
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  loading="lazy"
+                />
+                
+                {/* Category Badge */}
+                <div className="absolute top-4 left-4 z-10">
+                  <span className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-[10px] font-extrabold uppercase tracking-wider py-1.5 px-3 rounded-full shadow-md">
+                    {post.category}
+                  </span>
+                </div>
               </Link>
-              
-              <p className="text-sm text-slate-400 mb-6 line-clamp-3 flex-1">
-                {post.excerpt}
-              </p>
-              
-              {/* ACTION BUTTON */}
-              <Link 
-                href={`/blog/${post.slug}`} 
-                className="inline-flex items-center gap-2 text-sm font-bold text-indigo-400 hover:text-indigo-300 transition-colors w-fit group/btn"
-              >
-                Baca Selengkapnya
-                <svg className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                </svg>
-              </Link>
-            </div>
-          </article>
-        ))}
-      </div>
 
-      {/* FOOTER CALL TO ACTION */}
-      <div className="max-w-3xl mx-auto mt-20 p-8 bg-gradient-to-br from-indigo-900/40 to-[#1e293b] border border-indigo-500/20 rounded-3xl text-center">
-        <h3 className="text-xl font-bold text-white mb-2">Belum menemukan yang Anda cari?</h3>
-        <p className="text-sm text-slate-400 mb-6">Hubungi admin kami untuk pertanyaan lebih lanjut seputar layanan Ornot Prem.</p>
-        <a 
-          href="https://wa.me/+6285724486120" 
-          target="_blank" 
-          rel="noreferrer"
-          className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-full font-bold text-sm transition-colors shadow-lg shadow-indigo-500/25"
-        >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
-          Chat WhatsApp Admin
-        </a>
-      </div>
+              {/* CONTENT */}
+              <div className="p-6 flex-1 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center text-xs text-gray-400 font-bold mb-3 gap-2">
+                    <span>{post.date}</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-gray-300"></span>
+                    <span>{post.author}</span>
+                  </div>
+                  
+                  <Link href={`/blog/${post.slug}`}>
+                    <h2 className="text-lg font-extrabold text-gray-900 leading-snug mb-3 group-hover:text-indigo-600 transition-colors line-clamp-2">
+                      {post.title}
+                    </h2>
+                  </Link>
+                  
+                  <p className="text-sm text-gray-500 font-medium mb-6 line-clamp-3 leading-relaxed">
+                    {post.excerpt}
+                  </p>
+                </div>
+                
+                {/* ACTION BUTTON */}
+                <Link 
+                  href={`/blog/${post.slug}`} 
+                  className="inline-flex items-center gap-2 text-xs font-extrabold text-indigo-600 hover:text-indigo-800 transition-colors w-fit group/btn"
+                >
+                  <span>Baca Selengkapnya</span>
+                  <svg className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                  </svg>
+                </Link>
+              </div>
+            </article>
+          ))}
+        </div>
 
+        {/* FOOTER CALL TO ACTION */}
+        <div className="max-w-3xl mx-auto mt-20 p-8 sm:p-10 bg-white border border-indigo-100 rounded-3xl text-center shadow-xl shadow-indigo-500/5 relative overflow-hidden">
+          <div className="relative z-10">
+            <h3 className="text-xl sm:text-2xl font-black text-gray-900 mb-2">Belum menemukan informasi yang dicari?</h3>
+            <p className="text-sm text-gray-500 font-medium mb-6">Tim dukungan kami siap membantu menjawab pertanyaan seputar produk dan layanan Ornot Prem.</p>
+            <a 
+              href="https://wa.me/+62895402137562" 
+              target="_blank" 
+              rel="noreferrer"
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-700 hover:opacity-95 text-white px-8 py-3.5 rounded-2xl font-extrabold text-sm transition-all shadow-lg shadow-indigo-600/20"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+              </svg>
+              Chat WhatsApp Customer Support
+            </a>
+          </div>
+        </div>
+
+      </main>
     </div>
   );
 }
