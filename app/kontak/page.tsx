@@ -2,11 +2,11 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 
-// --- TAMBAHAN SEO METADATA ---
+// --- SEO METADATA ---
 export const metadata: Metadata = {
   title: 'Hubungi Kami & Layanan Pelanggan 24/7 | Ornot Prem',
-  description: 'Punya kendala pesanan, klaim garansi akun premium, atau ingin kerja sama? Hubungi tim dukungan ORNOT PREM via WhatsApp atau Email.',
-  keywords: ['Contact ornot prem', 'hubungi ornot prem', 'whatsapp ornot prem', 'customer service akun premium', 'bantuan ornot prem'],
+  description: 'Punya kendala pesanan, klaim garansi akun premium, atau pertanyaan produk? Hubungi tim dukungan ORNOT PREM via WhatsApp atau Email.',
+  keywords: ['contact ornot prem', 'hubungi ornot prem', 'whatsapp ornot prem', 'customer service akun premium', 'bantuan ornot prem'],
   openGraph: {
     title: 'Hubungi Kami - Ornot Prem',
     description: 'Layanan pelanggan siap membantu Anda 24/7 untuk kendala transaksi dan garansi akun.',
@@ -19,119 +19,130 @@ export const metadata: Metadata = {
 
 export default function ContactPage() {
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white font-sans overflow-hidden relative selection:bg-cyan-500/30 pb-24">
+    <div className="min-h-screen bg-slate-50/60 text-gray-900 font-sans overflow-hidden relative selection:bg-indigo-500/20 pb-24">
       
-      {/* Efek Cahaya Background */}
-      <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full bg-cyan-600/10 blur-[120px] pointer-events-none"></div>
+      {/* Background Soft Glow Aksen Indigo-Purple */}
+      <div className="absolute top-[-5%] left-1/2 -translate-x-1/2 w-[600px] h-[350px] rounded-full bg-gradient-to-b from-indigo-300/20 via-purple-300/10 to-transparent blur-[120px] pointer-events-none"></div>
 
-      <main className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+      <main className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-10">
+        
         {/* Header Halaman */}
-        <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-[2.5rem] p-8 md:p-12 shadow-2xl mb-10 text-center md:text-left flex flex-col md:flex-row items-center justify-between gap-6">
+        <header className="bg-white border border-gray-100 rounded-3xl p-6 sm:p-10 shadow-xl shadow-gray-200/50 mb-10 flex flex-col md:flex-row items-center justify-between gap-6">
           <div>
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-bold tracking-wide uppercase mb-4">
-              Layanan Pelanggan 24/7
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-700 text-xs font-bold tracking-wide uppercase mb-3 backdrop-blur-md">
+              <span className="w-2 h-2 rounded-full bg-indigo-600 animate-pulse"></span>
+              Layanan Customer Support
             </div>
-            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-3">
-              Hubungi Kami
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-gray-900 mb-2">
+              Hubungi <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-800">Kami</span>
             </h1>
-            <p className="text-gray-400 text-base md:text-lg max-w-xl">
-              Punya kendala seputar pesanan, garansi akun, atau ingin berkonsultasi? Tim <strong>ORNOT PREM</strong> siap membantu Anda kapan pun dibutuhkan.
+            <p className="text-gray-500 text-sm sm:text-base font-medium max-w-xl">
+              Punya kendala seputar pesanan, klaim garansi, atau pertanyaan produk? Tim <strong className="text-gray-900">ORNOT PREM</strong> siap memberikan bantuan terbaik untuk Anda.
             </p>
           </div>
-          <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center text-3xl shadow-xl flex-shrink-0">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-indigo-600 to-purple-700 flex items-center justify-center text-2xl sm:text-3xl text-white shadow-lg shadow-indigo-600/20 shrink-0">
             💬
           </div>
-        </div>
+        </header>
 
         {/* Grid Informasi Kontak & Pusat Bantuan */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
-          {/* Kolom Kiri: Kartu Kontak Cepat (2 Kartu Utama) */}
+          {/* Kolom Kiri: Kartu Kontak Cepat */}
           <div className="lg:col-span-1 space-y-4">
             
             {/* Kartu WhatsApp */}
-            <div className="bg-white/5 backdrop-blur-md border border-white/10 p-6 rounded-3xl hover:border-emerald-500/40 transition-all group">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 text-2xl mb-4 group-hover:scale-110 transition-transform">
+            <div className="bg-white border border-gray-100 p-6 rounded-3xl shadow-xl shadow-gray-200/50 hover:border-emerald-300 transition-all duration-300 group">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 text-2xl mb-4 group-hover:scale-105 transition-transform">
                 📱
               </div>
-              <h3 className="text-lg font-bold text-white mb-1">WhatsApp Resmi</h3>
-              <p className="text-xs text-gray-400 mb-4">Respon cepat untuk klaim garansi & bantuan transaksi.</p>
+              <h3 className="text-base font-extrabold text-gray-900 mb-1">WhatsApp Resmi</h3>
+              <p className="text-xs text-gray-500 font-medium mb-4">Respon cepat untuk klaim garansi & bantuan transaksi.</p>
               <a 
                 href="https://wa.me/62895402137562" 
                 target="_blank" 
                 rel="noopener noreferrer" 
-                className="inline-flex items-center gap-2 text-emerald-400 font-bold text-sm hover:underline"
+                className="inline-flex items-center gap-1.5 text-emerald-600 hover:text-emerald-700 font-extrabold text-xs transition-colors"
               >
-                Chat WhatsApp &rarr;
+                <span>Chat WhatsApp Sekarang</span>
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                </svg>
               </a>
             </div>
 
             {/* Kartu Email */}
-            <div className="bg-white/5 backdrop-blur-md border border-white/10 p-6 rounded-3xl hover:border-cyan-500/40 transition-all group">
-              <div className="w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 text-2xl mb-4 group-hover:scale-110 transition-transform">
+            <div className="bg-white border border-gray-100 p-6 rounded-3xl shadow-xl shadow-gray-200/50 hover:border-indigo-200 transition-all duration-300 group">
+              <div className="w-12 h-12 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 text-2xl mb-4 group-hover:scale-105 transition-transform">
                 ✉️
               </div>
-              <h3 className="text-lg font-bold text-white mb-1">Email Dukungan</h3>
-              <p className="text-xs text-gray-400 mb-4">Untuk kerja sama bisnis atau pertanyaan administratif.</p>
-              <span className="text-white font-medium text-sm">smg0881@gmail.com</span>
+              <h3 className="text-base font-extrabold text-gray-900 mb-1">Email Dukungan</h3>
+              <p className="text-xs text-gray-500 font-medium mb-3">Untuk pertanyaan tertulis atau keperluan administratif.</p>
+              <span className="text-gray-900 font-mono font-bold text-xs bg-slate-50 px-3 py-1.5 rounded-xl border border-gray-100 inline-block">
+                smg0881@gmail.com
+              </span>
             </div>
 
             {/* Jam Operasional */}
-            <div className="bg-white/5 backdrop-blur-md border border-white/10 p-6 rounded-3xl">
-              <div className="w-12 h-12 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 text-2xl mb-4">
+            <div className="bg-white border border-gray-100 p-6 rounded-3xl shadow-xl shadow-gray-200/50">
+              <div className="w-12 h-12 rounded-2xl bg-purple-50 border border-purple-100 flex items-center justify-center text-purple-600 text-2xl mb-4">
                 ⏰
               </div>
-              <h3 className="text-lg font-bold text-white mb-1">Jam Operasional</h3>
-              <p className="text-xs text-gray-400">Sistem otomatis berjalan 24/7. Respon admin manual: 09.00 - 22.00 WIB.</p>
+              <h3 className="text-base font-extrabold text-gray-900 mb-1">Jam Operasional</h3>
+              <p className="text-xs text-gray-500 font-medium leading-relaxed">
+                Pengiriman & verifikasi otomatis berjalan 24/7. Respon admin manual: <strong className="text-gray-800">09.00 - 22.00 WIB</strong>.
+              </p>
             </div>
 
           </div>
 
           {/* Kolom Kanan: Panduan & Informasi Bantuan */}
-          <div className="lg:col-span-2 bg-white/5 backdrop-blur-md border border-white/10 rounded-[2.5rem] p-8 md:p-10 shadow-2xl space-y-6">
+          <div className="lg:col-span-2 bg-white border border-gray-100 rounded-3xl p-6 sm:p-8 shadow-xl shadow-gray-200/50 space-y-6 flex flex-col justify-between">
             <div>
-              <h2 className="text-2xl font-bold text-white mb-2">Pusat Bantuan & Ketentuan Layanan</h2>
-              <p className="text-sm text-gray-400">Informasi penting sebelum Anda menghubungi layanan pelanggan.</p>
+              <div className="border-b border-gray-100 pb-4 mb-6">
+                <h2 className="text-xl sm:text-2xl font-black text-gray-900 mb-1">Pusat Bantuan & Panduan Layanan</h2>
+                <p className="text-xs sm:text-sm text-gray-500 font-medium">Informasi penting sebelum Anda menghubungi customer support.</p>
+              </div>
+
+              <div className="space-y-4">
+                <div className="p-4 sm:p-5 rounded-2xl bg-slate-50/80 border border-gray-100">
+                  <h3 className="font-extrabold text-gray-900 mb-1 text-sm sm:text-base flex items-center gap-2">
+                    <span className="text-indigo-600 font-black">1.</span> Transaksi & Pengiriman Akun
+                  </h3>
+                  <p className="text-xs sm:text-sm text-gray-500 font-medium leading-relaxed">
+                    Seluruh transaksi diproses otomatis oleh sistem. Setelah pembayaran QRIS sukses, detail kredensial akun akan langsung ditampilkan di halaman invoice dan dikirimkan otomatis.
+                  </p>
+                </div>
+
+                <div className="p-4 sm:p-5 rounded-2xl bg-slate-50/80 border border-gray-100">
+                  <h3 className="font-extrabold text-gray-900 mb-1 text-sm sm:text-base flex items-center gap-2">
+                    <span className="text-indigo-600 font-black">2.</span> Klaim Garansi Penuh
+                  </h3>
+                  <p className="text-xs sm:text-sm text-gray-500 font-medium leading-relaxed">
+                    Jika mengalami kendala login atau akses, silakan hubungi WhatsApp resmi kami dengan melampirkan <strong className="text-gray-900">Nomor Invoice (INV-...)</strong> untuk penanganan kilat.
+                  </p>
+                </div>
+
+                <div className="p-4 sm:p-5 rounded-2xl bg-slate-50/80 border border-gray-100">
+                  <h3 className="font-extrabold text-gray-900 mb-1 text-sm sm:text-base flex items-center gap-2">
+                    <span className="text-indigo-600 font-black">3.</span> Konsultasi Sebelum Membeli
+                  </h3>
+                  <p className="text-xs sm:text-sm text-gray-500 font-medium leading-relaxed">
+                    Bingung memilih paket yang sesuai dengan kebutuhan Anda? Jangan ragu untuk bertanya langsung ke admin kami via WhatsApp.
+                  </p>
+                </div>
+              </div>
             </div>
 
-            <div className="space-y-4 text-sm text-gray-300 leading-relaxed">
-              <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/5">
-                <h3 className="font-bold text-white mb-1 text-base flex items-center gap-2">
-                  <span className="text-cyan-400">1.</span> Cara Transaksi & Pengiriman Akun
-                </h3>
-                <p className="text-gray-400">
-                  Seluruh produk di ORNOT PREM diproses secara otomatis oleh sistem. Setelah pembayaran terverifikasi, detail akun atau instruksi aktivasi akan langsung dikirimkan ke Anda dalam hitungan detik.
-                </p>
-              </div>
-
-              <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/5">
-                <h3 className="font-bold text-white mb-1 text-base flex items-center gap-2">
-                  <span className="text-cyan-400">2.</span> Klaim Garansi & Kendala Akun
-                </h3>
-                <p className="text-gray-400">
-                  Jika Anda mengalami kendala seperti akun error, masa aktif terpotong, atau kendala login, silakan hubungi WhatsApp resmi kami dengan melampirkan <strong>Nomor Pesanan / Bukti Transaksi</strong> untuk proses pengecekan kilat.
-                </p>
-              </div>
-
-              <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/5">
-                <h3 className="font-bold text-white mb-1 text-base flex items-center gap-2">
-                  <span className="text-cyan-400">3.</span> Kerja Sama Reseller / Agen
-                </h3>
-                <p className="text-gray-400">
-                  Bagi Anda yang ingin mengambil kuantiti besar atau bekerja sama lebih lanjut sebagai mitra bisnis jangka panjang, silakan langsung hubungi kontak email atau WhatsApp kami untuk penawaran khusus.
-                </p>
-              </div>
-            </div>
-
-            <div className="pt-4 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
-              <p className="text-xs text-gray-500">Butuh respons cepat? Langsung chat via WhatsApp.</p>
+            <div className="pt-4 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <p className="text-xs text-gray-500 font-medium">Butuh respon cepat? Langsung chat via WhatsApp.</p>
               <a 
                 href="https://wa.me/62895402137562" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="w-full sm:w-auto bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold px-6 py-3 rounded-full transition-all text-center text-sm shadow-lg"
+                className="w-full sm:w-auto bg-gradient-to-r from-emerald-600 to-teal-600 hover:opacity-95 text-white font-extrabold px-6 py-3 rounded-2xl transition-all text-center text-xs sm:text-sm shadow-md shadow-emerald-600/20 shrink-0"
               >
-                Chat WhatsApp Sekarang
+                Chat WhatsApp Customer Support
               </a>
             </div>
 

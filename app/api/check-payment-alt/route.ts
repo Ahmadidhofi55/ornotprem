@@ -18,11 +18,11 @@ export async function POST(req: Request) {
   try {
     const { invoiceNumber } = await req.json();
     if (!invoiceNumber) {
-      return NextResponse.json({ error: 'Nomor invoice wajib disertakan' }, { status: 400 });
+      return NextResponse.json({ error: 'Invoice number is required' }, { status: 400 });
     }
 
     const cleanInvoice = invoiceNumber.trim();
-    console.log("Mengecek status & akun dari API untuk invoice:", cleanInvoice);
+    console.log("Find status for invoice:", cleanInvoice);
 
     // 1. Ambil data transaksi dari Supabase
     const { data: tx, error: txError } = await supabase
@@ -32,7 +32,7 @@ export async function POST(req: Request) {
       .maybeSingle();
 
     if (txError || !tx) {
-      return NextResponse.json({ error: 'Transaksi tidak ditemukan di database' }, { status: 404 });
+      return NextResponse.json({ error: 'Transaction not found in database' }, { status: 404 });
     }
 
     // 2. Ambil invoice deposit dari log jika ada
@@ -42,11 +42,11 @@ export async function POST(req: Request) {
         const parsed = JSON.parse(tx.api_response_log);
         premkuInvoice = parsed.premku_deposit_invoice || parsed.invoice || '';
       } catch (e) {
-        console.error("Gagal parsing log:", e);
+        console.error("Error parsing log:", e);
       }
     }
 
-    let accountDetailsText = tx.digital_account_details || 'Akun premium sedang disiapkan.';
+    let accountDetailsText = tx.digital_account_details || 'Premium account is being prepared.';
     let isPaid = false;
 
     // 3. Tembak API Premku (untuk cek status sekaligus mengambil data akun jika disediakan dalam respons)
@@ -100,7 +100,7 @@ Akses: ${acc.link || acc.url || '-'}`;
           }
         }
       } catch (apiErr) {
-        console.error("Gagal koneksi ke API Premku:", apiErr);
+        console.error("Error fetching Premku API:", apiErr);
       }
     } else {
       // Jika tidak ada invoice deposit, anggap langsung sinkron untuk testing
@@ -138,6 +138,6 @@ Akses: ${acc.link || acc.url || '-'}`;
     if (err instanceof Error) {
       return NextResponse.json({ error: err.message }, { status: 500 });
     }
-    return NextResponse.json({ error: 'Terjadi kesalahan pada server' }, { status: 500 });
+    return NextResponse.json({ error: 'Server occurred an error' }, { status: 500 });
   }
 }

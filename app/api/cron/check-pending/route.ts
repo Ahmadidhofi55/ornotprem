@@ -18,7 +18,7 @@ export async function GET() {
       .limit(20);
 
     if (!pendingTxs || pendingTxs.length === 0) {
-      return NextResponse.json({ message: 'Tidak ada transaksi pending.' });
+      return NextResponse.json({ message: 'No pending transactions found.' });
     }
 
     let updatedCount = 0;

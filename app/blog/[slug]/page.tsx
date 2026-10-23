@@ -1,6 +1,7 @@
 // app/blog/[slug]/page.tsx
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import type { Metadata } from 'next';
 
 const blogPosts = [
   {
@@ -17,7 +18,7 @@ const blogPosts = [
         <li><strong>Cek Testimoni Asli:</strong> Jangan hanya percaya pada ulasan teks, cek juga screenshot riwayat transaksi dari pembeli sebelumnya.</li>
         <li><strong>Garansi Penuh:</strong> Pilihlah toko yang berani memberikan garansi full selama masa langganan berjalan.</li>
       </ul>
-      <p>Di <strong>Ornot Prem</strong>, kami menjamin 100% semua akun didaftarkan melalui jalur resmi, sehingga Anda bebas dari rasa khawatir akun *banned* di tengah jalan.</p>
+      <p>Di <strong>Ornot Prem</strong>, kami menjamin 100% semua akun didaftarkan melalui jalur resmi, sehingga Anda bebas dari rasa khawatir akun <em>banned</em> di tengah jalan.</p>
     `,
     category: 'Edukasi',
     date: '12 Agustus 2026',
@@ -31,11 +32,11 @@ const blogPosts = [
     excerpt: 'Sering kena peringatan "Your device isn\'t part of the Netflix Household"? Berikut adalah trik aman dan legal untuk mengatasi batas layar saat sharing akun.',
     content: `
       <h2>Apa itu Aturan Netflix Household?</h2>
-      <p>Netflix baru-hari ini memperketat kebijakan berbaginya. Sistem mereka melacak IP Address dan ID Perangkat (TV) untuk memastikan akun hanya digunakan dalam satu rumah tangga yang sama.</p>
+      <p>Netflix memperketat kebijakan berbaginya. Sistem mereka melacak IP Address dan ID Perangkat (TV) untuk memastikan akun hanya digunakan dalam satu rumah tangga yang sama.</p>
       <h2>Cara Mengatasinya Secara Legal</h2>
       <ol>
-        <li><strong>Gunakan Perangkat Mobile:</strong> Aturan *Household* saat ini paling ketat diterapkan pada Smart TV. Jika Anda menggunakan HP, Tablet, atau Laptop (via web browser), peringatan ini lebih jarang muncul.</li>
-        <li><strong>Verifikasi Kode Sementara:</strong> Netflix memberikan opsi verifikasi via email/SMS. Jika Anda patungan melalui layanan terpercaya seperti Ornot Prem, tim admin akan selalu siaga membantu memberikan kode OTP tersebut.</li>
+        <li><strong>Gunakan Perangkat Mobile:</strong> Aturan <em>Household</em> saat ini paling ketat diterapkan pada Smart TV. Jika Anda menggunakan HP, Tablet, atau Laptop (via web browser), peringatan ini lebih jarang muncul.</li>
+        <li><strong>Verifikasi Kode Sementara:</strong> Netflix memberikan opsi verifikasi via email/SMS. Jika Anda berlangganan melalui layanan terpercaya seperti Ornot Prem, tim admin akan selalu siaga membantu memberikan kode OTP tersebut.</li>
         <li><strong>Jangan Menonton Bersamaan (Screen Limit):</strong> Akun Premium Netflix maksimal hanya bisa memutar di 4 layar secara bersamaan. Patuhilah jam tayang dan kesepakatan bersama pembeli lain.</li>
       </ol>
     `,
@@ -51,14 +52,14 @@ const blogPosts = [
     excerpt: 'Kupas tuntas 5 keuntungan utama berlangganan Spotify Premium dibandingkan versi gratis. Mulai dari kualitas audio hingga fitur download offline.',
     content: `
       <h2>Apakah Berlangganan Spotify Premium Sepadan?</h2>
-      <p>Jika Anda menghabiskan lebih dari 2 jam sehari mendengarkan musik atau *podcast*, jawabannya adalah **Sangat Sepadan!**</p>
+      <p>Jika Anda menghabiskan lebih dari 2 jam sehari mendengarkan musik atau <em>podcast</em>, jawabannya adalah <strong>Sangat Sepadan!</strong></p>
       <h2>5 Keunggulan Spotify Premium:</h2>
       <ul>
-        <li><strong>Bebas Iklan (Ad-Free):</strong> Tidak ada lagi iklan audio menjengkelkan yang merusak suasana hati di tengah *playlist* favorit Anda.</li>
+        <li><strong>Bebas Iklan (Ad-Free):</strong> Tidak ada lagi iklan audio menjengkelkan yang merusak suasana hati di tengah <em>playlist</em> favorit Anda.</li>
         <li><strong>Download & Dengarkan Offline:</strong> Hemat kuota! Anda bisa mengunduh ribuan lagu dan memutarnya saat sedang tidak ada sinyal internet.</li>
-        <li><strong>Skip Tanpa Batas:</strong> Anda bebas melewatkan (*skip*) lagu yang tidak Anda suka kapan saja.</li>
-        <li><strong>Pilih Lagu Sesuka Hati:</strong> Tidak ada lagi mode acak (*shuffle*) paksaan.</li>
-        <li><strong>Kualitas Audio Maksimal:</strong> Nikmati musik dengan *bitrate* hingga 320 kbps (jauh lebih jernih dan detail dibanding versi gratis).</li>
+        <li><strong>Skip Tanpa Batas:</strong> Anda bebas melewatkan (<em>skip</em>) lagu yang tidak Anda suka kapan saja.</li>
+        <li><strong>Pilih Lagu Sesuka Hati:</strong> Tidak ada lagi mode acak (<em>shuffle</em>) paksaan.</li>
+        <li><strong>Kualitas Audio Maksimal:</strong> Nikmati musik dengan <em>bitrate</em> hingga 320 kbps (jauh lebih jernih dan detail dibanding versi gratis).</li>
       </ul>
     `,
     category: 'Review',
@@ -73,12 +74,12 @@ const blogPosts = [
     excerpt: 'Rayakan bulan kemerdekaan dengan diskon besar-besaran di Ornot Prem. Klaim kode promonya sekarang untuk langganan Canva Pro dan YouTube Premium.',
     content: `
       <h2>MERDEKA DARI IKLAN!</h2>
-      <p>Di bulan Agustus ini, Ornot Prem mengadakan promo gila-gilaan untuk menyambut Hari Kemerdekaan RI.</p>
+      <p>Di bulan Agustus ini, Ornot Prem mengadakan promo spesial untuk menyambut Hari Kemerdekaan RI.</p>
       <h2>Diskon yang Tersedia:</h2>
       <ul>
         <li><strong>Canva Pro 1 Tahun:</strong> Diskon 50% untuk kuota 50 pembeli pertama.</li>
         <li><strong>YouTube Premium Family:</strong> Beli 3 bulan, dapat tambahan gratis 1 bulan!</li>
-        <li><strong>Netflix Sharing (4K UHD):</strong> Potongan harga khusus untuk pelanggan yang memperpanjang (*extend*) langganannya.</li>
+        <li><strong>Netflix Sharing (4K UHD):</strong> Potongan harga khusus untuk pelanggan yang memperpanjang (<em>extend</em>) langganannya.</li>
       </ul>
       <p>Langsung chat admin kami di WhatsApp dan sebutkan kode voucher: <strong>MERDEKA2026</strong>. Promo ini sangat terbatas!</p>
     `,
@@ -180,27 +181,27 @@ const blogPosts = [
   },
   {
     id: '11',
-    slug: 'peluang-bisnis-reseller-akun-premium',
-    title: 'Peluang Bisnis Reseller Akun Premium, Untung Jutaan Per Bulan!',
-    excerpt: 'Ingin mulai bisnis digital tanpa ribet stok barang? Bergabunglah menjadi reseller di Ornot Prem. Dapatkan harga khusus dengan margin keuntungan maksimal.',
+    slug: 'peluang-bisnis-layanan-akun-premium',
+    title: 'Peluang Usaha Digital Layanan Akun Premium, Untung Jutaan!',
+    excerpt: 'Ingin mulai bisnis digital tanpa ribet stok barang? Pelajari cara memulai usaha produk digital dengan dukungan otomatisasi dari Ornot Prem.',
     content: `
-      <h2>Bisnis Tanpa Modal Besar</h2>
-      <p>Jadilah mitra Ornot Prem. Anda jual dengan harga pasaran, kami berikan harga distributor. Proses serba otomatis melalui web panel khusus reseller.</p>
+      <h2>Bisnis Produk Digital Berkelanjutan</h2>
+      <p>Aplikasi dan layanan streaming telah menjadi kebutuhan harian masyarakat. Memulai usaha produk digital kini semakin mudah dengan sistem pengiriman otomatis dan garansi terjamin dari Ornot Prem.</p>
     `,
     category: 'Edukasi',
     date: '5 Juli 2026',
     author: 'Ornot Group',
-    imageUrl: 'https://placehold.co/800x500/8b5cf6/ffffff?text=Peluang+Reseller&font=Montserrat',
+    imageUrl: 'https://placehold.co/800x500/8b5cf6/ffffff?text=Peluang+Digital&font=Montserrat',
   },
   {
     id: '12',
     slug: 'top-up-saldo-qris-otomatis-cepat',
-    title: 'Kemudahan Top Up Saldo via QRIS Otomatis, Masuk Dalam 5 Detik!',
+    title: 'Kemudahan Pembayaran via QRIS Otomatis, Masuk Dalam 5 Detik!',
     excerpt: 'Beli akun premium kini makin gampang. Ornot Prem mendukung pembayaran QRIS otomatis (Gopay, OVO, Dana, ShopeePay, M-Banking) tanpa perlu konfirmasi manual admin.',
     content: `
       <h2>Sistem Pembayaran Canggih Ornot Prem</h2>
       <p>Kami memahami bahwa menunggu verifikasi pembayaran manual itu membosankan. Oleh karena itu, kami telah melakukan peningkatan sistem secara masif.</p>
-      <p>Kini Anda cukup *scan* kode QRIS, dan saldo akun Anda akan bertambah secara otomatis di bawah 5 detik!</p>
+      <p>Kini Anda cukup <em>scan</em> kode QRIS, dan transaksi Anda diproses secara otomatis dalam hitungan detik!</p>
     `,
     category: 'Update Info',
     date: '1 Juli 2026',
@@ -214,7 +215,7 @@ const blogPosts = [
     excerpt: 'Jangan sampai skripsi atau email kerjaan Anda terlihat tidak profesional karena grammar berantakan. Lihat bedanya Grammarly versi gratis dan premium.',
     content: `
       <h2>Menulis Bahasa Inggris dengan Pede</h2>
-      <p>Grammarly Premium tidak hanya mengecek typo, tapi juga menyarankan penyusunan ulang kalimat (*sentence rewrite*) agar tulisan Anda lebih luwes dan natural.</p>
+      <p>Grammarly Premium tidak hanya mengecek typo, tapi juga menyarankan penyusunan ulang kalimat (<em>sentence rewrite</em>) agar tulisan Anda lebih luwes dan natural.</p>
     `,
     category: 'Edukasi',
     date: '25 Juni 2026',
@@ -237,7 +238,41 @@ const blogPosts = [
   }
 ];
 
-export default async function BlogPostDetail({ params }: { params: Promise<{ slug: string }> | { slug: string } }) {
+// --- DYNAMIC METADATA GENERATOR ---
+export async function generateMetadata({ 
+  params 
+}: { 
+  params: Promise<{ slug: string }> | { slug: string } 
+}): Promise<Metadata> {
+  const resolvedParams = await Promise.resolve(params);
+  const post = blogPosts.find((p) => p.slug === resolvedParams.slug);
+
+  if (!post) {
+    return {
+      title: 'Artikel Tidak Ditemukan | ORNOT PREM',
+    };
+  }
+
+  return {
+    title: `${post.title} | ORNOT PREM`,
+    description: post.excerpt,
+    openGraph: {
+      title: post.title,
+      description: post.excerpt,
+      url: `https://ornotprem.my.id/blog/${post.slug}`,
+      siteName: 'Ornot Prem',
+      images: [{ url: post.imageUrl }],
+      locale: 'id_ID',
+      type: 'article',
+    },
+  };
+}
+
+export default async function BlogPostDetail({ 
+  params 
+}: { 
+  params: Promise<{ slug: string }> | { slug: string } 
+}) {
   const resolvedParams = await Promise.resolve(params);
   const slug = resolvedParams.slug;
 
@@ -248,61 +283,95 @@ export default async function BlogPostDetail({ params }: { params: Promise<{ slu
   }
 
   return (
-    <div className="min-h-screen bg-[#0f172a] text-slate-300 py-8 sm:py-12 px-4 sm:px-6 lg:px-8 font-sans selection:bg-indigo-500/30">
-      <div className="max-w-3xl mx-auto animate-in fade-in slide-in-from-bottom-8 duration-700">
+    <div className="min-h-screen bg-slate-50/60 text-gray-900 font-sans overflow-hidden relative selection:bg-indigo-500/20 pb-24">
+      
+      {/* Background Soft Glow Aksen Indigo-Purple */}
+      <div className="absolute top-[-5%] left-1/2 -translate-x-1/2 w-[600px] h-[350px] rounded-full bg-gradient-to-b from-indigo-300/20 via-purple-300/10 to-transparent blur-[120px] pointer-events-none"></div>
+
+      <main className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-10">
         
-        <Link href="/blog" className="inline-flex items-center gap-2 text-indigo-400 hover:text-indigo-300 font-bold text-sm mb-6 sm:mb-8 transition-colors">
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-          Kembali ke Blog
-        </Link>
-
-        <header className="mb-8 sm:mb-10 text-center">
-          <span className="inline-block bg-indigo-500/20 text-indigo-400 text-[10px] sm:text-xs font-black uppercase tracking-widest py-1.5 px-3 sm:px-4 rounded-full mb-3 sm:mb-4 border border-indigo-500/30">
-            {post.category}
-          </span>
-          <h1 className="text-2xl sm:text-3xl md:text-5xl font-black text-white leading-tight mb-4 sm:mb-6 px-2 sm:px-0">
-            {post.title}
-          </h1>
-          <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 text-xs sm:text-sm font-medium text-slate-400">
-            <span>{post.date}</span>
-            <span className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-slate-600"></span>
-            <span>{post.author}</span>
-          </div>
-        </header>
-
-        {/* Gambar responsif: h-48 di HP, h-80/96 di perangkat besar */}
-        <div className="w-full h-48 sm:h-64 md:h-80 lg:h-96 rounded-2xl sm:rounded-3xl overflow-hidden mb-8 sm:mb-12 shadow-2xl border border-slate-800">
-          <img src={post.imageUrl} alt={post.title} className="w-full h-full object-cover" />
+        {/* Navigation Back */}
+        <div className="mb-6">
+          <Link 
+            href="/blog" 
+            className="inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-800 font-extrabold text-xs sm:text-sm transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            Kembali ke Semua Artikel
+          </Link>
         </div>
 
-        {/* Typografi artikel responsif dengan modifier 'prose-sm sm:prose-base' */}
-        <div 
-          className="prose prose-sm sm:prose-base prose-invert prose-indigo max-w-none 
-          prose-headings:font-black prose-headings:text-white prose-headings:tracking-tight 
-          prose-h2:text-xl sm:prose-h2:text-2xl prose-h2:mt-8 sm:prose-h2:mt-10 prose-h2:mb-3 sm:prose-h2:mb-4 
-          prose-p:text-slate-300 prose-p:leading-relaxed prose-p:mb-4 sm:prose-p:mb-6 
-          prose-a:text-indigo-400 prose-a:no-underline hover:prose-a:underline hover:prose-a:text-indigo-300
-          prose-strong:text-white prose-strong:font-bold
-          prose-ul:list-disc prose-ul:pl-5 sm:prose-ul:pl-6 prose-li:text-slate-300 prose-li:mb-1.5 sm:prose-li:mb-2
-          prose-ol:list-decimal prose-ol:pl-5 sm:prose-ol:pl-6"
-          dangerouslySetInnerHTML={{ __html: post.content }}
-        />
+        {/* Article Header Card */}
+        <article className="bg-white border border-gray-100 rounded-3xl p-6 sm:p-10 md:p-12 shadow-xl shadow-gray-200/50">
+          
+          <header className="mb-8 text-center max-w-3xl mx-auto">
+            <span className="inline-block bg-indigo-50 text-indigo-700 text-[10px] sm:text-xs font-black uppercase tracking-wider py-1.5 px-4 rounded-full mb-4 border border-indigo-100">
+              {post.category}
+            </span>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-gray-900 leading-tight mb-4 tracking-tight">
+              {post.title}
+            </h1>
+            <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 text-xs font-bold text-gray-400">
+              <span>{post.date}</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-gray-300"></span>
+              <span className="text-gray-600">{post.author}</span>
+            </div>
+          </header>
 
-        <div className="mt-12 sm:mt-16 bg-[#1e293b] border border-slate-700 rounded-2xl sm:rounded-3xl p-6 sm:p-10 text-center shadow-xl">
-          <h3 className="text-lg sm:text-2xl font-black text-white mb-2 sm:mb-3">Butuh Akun Premium Cepat & Aman?</h3>
-          <p className="text-sm sm:text-base text-slate-400 mb-6 sm:mb-8 max-w-md mx-auto">Bergabunglah dengan ribuan pelanggan Ornot Prem lainnya dan nikmati layanan premium tanpa batas.</p>
-          <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4">
-            <Link href="/register" className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 px-6 sm:px-8 rounded-xl sm:rounded-full shadow-lg transition-colors">
-              Daftar Sekarang
-            </Link>
-            <a href="https://wa.me/6285724486120" target="_blank" rel="noreferrer" className="w-full sm:w-auto bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-bold py-3 px-6 sm:px-8 rounded-xl sm:rounded-full shadow-lg transition-colors flex justify-center items-center gap-2">
-              <svg className="w-5 h-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
-              Tanya Admin
-            </a>
+          {/* Featured Image */}
+          <div className="w-full h-52 sm:h-72 md:h-96 rounded-2xl sm:rounded-3xl overflow-hidden mb-8 shadow-md border border-gray-100">
+            <img 
+              src={post.imageUrl} 
+              alt={post.title} 
+              className="w-full h-full object-cover" 
+            />
           </div>
-        </div>
 
-      </div>
+          {/* Article Typography Body */}
+          <div 
+            className="prose prose-slate prose-indigo max-w-none 
+              prose-headings:font-black prose-headings:text-gray-900 prose-headings:tracking-tight 
+              prose-h2:text-xl sm:prose-h2:text-2xl prose-h2:mt-8 sm:prose-h2:mt-10 prose-h2:mb-3 sm:prose-h2:mb-4 
+              prose-p:text-gray-600 prose-p:leading-relaxed prose-p:mb-4 sm:prose-p:mb-6 
+              prose-a:text-indigo-600 prose-a:font-bold prose-a:no-underline hover:prose-a:underline hover:prose-a:text-indigo-800
+              prose-strong:text-gray-900 prose-strong:font-black
+              prose-ul:list-disc prose-ul:pl-5 sm:prose-ul:pl-6 prose-li:text-gray-600 prose-li:mb-2
+              prose-ol:list-decimal prose-ol:pl-5 sm:prose-ol:pl-6"
+            dangerouslySetInnerHTML={{ __html: post.content }}
+          />
+
+          {/* Bottom CTA Card */}
+          <div className="mt-12 sm:mt-16 bg-gradient-to-br from-indigo-50/80 to-purple-50/80 border border-indigo-100 rounded-2xl sm:rounded-3xl p-6 sm:p-10 text-center shadow-sm">
+            <h3 className="text-lg sm:text-2xl font-black text-gray-900 mb-2">Butuh Akun Premium Cepat & Bergaransi?</h3>
+            <p className="text-xs sm:text-sm text-gray-500 font-medium mb-6 max-w-md mx-auto">
+              Nikmati kemudahan beli akun premium resmi dengan proses otomatis 24/7 di Ornot Prem.
+            </p>
+            <div className="flex flex-col sm:flex-row justify-center gap-3">
+              <Link 
+                href="/" 
+                className="w-full sm:w-auto bg-gradient-to-r from-indigo-600 to-purple-700 hover:opacity-95 text-white font-extrabold py-3 px-8 rounded-xl sm:rounded-2xl shadow-md shadow-indigo-600/20 text-xs sm:text-sm transition-all"
+              >
+                Lihat Katalog Produk
+              </Link>
+              <a 
+                href="https://wa.me/62895402137562" 
+                target="_blank" 
+                rel="noreferrer" 
+                className="w-full sm:w-auto bg-white border border-gray-200 text-gray-800 hover:bg-gray-50 font-extrabold py-3 px-8 rounded-xl sm:rounded-2xl shadow-sm text-xs sm:text-sm transition-all flex justify-center items-center gap-2"
+              >
+                <svg className="w-4 h-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+                Tanya Admin WhatsApp
+              </a>
+            </div>
+          </div>
+
+        </article>
+
+      </main>
     </div>
   );
 }
