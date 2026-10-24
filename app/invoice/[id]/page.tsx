@@ -60,12 +60,15 @@ export default function InvoiceInteractivePage({
   const [isLoading, setIsLoading] = useState(true);
   const [checkingPayment, setCheckingPayment] = useState(false);
   
-  // State untuk Countdown Timer (dalam hitungan detik)
-  const [timeLeft, setTimeLeft] = useState<number>(120 * 60); // Default 120 menit (7200 detik)
+  // State Countdown Timer (detik)
+  const [timeLeft, setTimeLeft] = useState<number>(120 * 60);
+
+  // State Modal Perbesar QRIS
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const hasFiredPixel = useRef(false);
 
-  // 1. Fetch initial transaction data from Supabase
+  // 1. Fetch data dari Supabase
   useEffect(() => {
     const fetchTx = async () => {
       const { data, error } = await supabase
@@ -80,14 +83,13 @@ export default function InvoiceInteractivePage({
           try {
             setApiLog(JSON.parse(data.api_response_log));
           } catch (e) {
-            console.error("Failed to parse api_response_log:", e);
+            console.error("Gagal parse api_response_log:", e);
           }
         }
 
-        // Hitung sisa waktu berdasarkan created_at transaksi (+120 menit)
         if (data.created_at) {
           const createdAtTime = new Date(data.created_at).getTime();
-          const expireTime = createdAtTime + 120 * 60 * 1000; // 120 menit dalam ms
+          const expireTime = createdAtTime + 120 * 60 * 1000; // 120 menit
           const remainingSeconds = Math.max(0, Math.floor((expireTime - Date.now()) / 1000));
           setTimeLeft(remainingSeconds);
         }
@@ -98,7 +100,7 @@ export default function InvoiceInteractivePage({
     fetchTx();
   }, [invoiceId]);
 
-  // 2. Countdown Timer Effect (Berjalan tiap detik sampai 0 atau PAID)
+  // 2. Countdown Timer
   useEffect(() => {
     if (!transaction || transaction.payment_status === 'PAID') return;
 
@@ -115,7 +117,7 @@ export default function InvoiceInteractivePage({
     return () => clearInterval(timer);
   }, [transaction]);
 
-  // 3. Automated polling to check payment status
+  // 3. Automated Polling Cek Status Pembayaran
   useEffect(() => {
     if (!transaction || transaction.payment_status === 'PAID' || timeLeft === 0) return;
 
@@ -140,7 +142,7 @@ export default function InvoiceInteractivePage({
           });
         }
       } catch (e) {
-        console.error("Failed to sync payment status", e);
+        console.error("Gagal cek status pembayaran:", e);
       } finally {
         setCheckingPayment(false);
       }
@@ -149,7 +151,7 @@ export default function InvoiceInteractivePage({
     return () => clearInterval(interval);
   }, [transaction, invoiceId, timeLeft]);
 
-  // 4. Meta Pixel "Purchase" Event Effect
+  // 4. Meta Pixel "Purchase" Event
   useEffect(() => {
     if (transaction?.payment_status === 'PAID' && !hasFiredPixel.current) {
       if (typeof window !== 'undefined' && window.fbq) {
@@ -166,20 +168,18 @@ export default function InvoiceInteractivePage({
     }
   }, [transaction, invoiceId]);
 
-  // Format detik menjadi format Jam:Menit:Detik (HH:MM:SS)
+  // Format detik ke HH:MM:SS
   const formatTimeLeft = (totalSeconds: number): string => {
     const hours = Math.floor(totalSeconds / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
     const seconds = totalSeconds % 60;
-
     const pad = (num: number) => String(num).padStart(2, '0');
     return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
   };
 
-  // Helper to extract QRIS Image URL from different Premku JSON structures
+  // Helper gambar QRIS
   const getQrImageUrl = (): string | null => {
     if (!apiLog) return null;
-
     const img = apiLog.data?.qr_image || apiLog.qr_image;
     if (img) return img;
 
@@ -188,14 +188,40 @@ export default function InvoiceInteractivePage({
       if (raw.startsWith('data:image')) return raw;
       return `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(raw)}`;
     }
-
     return null;
   };
 
-  // Helper to extract Unique Code
+  // Helper Kode Unik
   const getKodeUnik = (): number | null => {
     if (!apiLog) return null;
     return apiLog.data?.kode_unik ?? apiLog.kode_unik ?? null;
+  };
+
+  // Fungsi Unduh Gambar QRIS
+  const handleDownloadQr = async () => {
+    const url = getQrImageUrl();
+    if (!url) return;
+
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = `QRIS-${transaction?.invoice_number || 'payment'}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(blobUrl);
+    } catch {
+      // Fallback untuk Base64 / Direct link
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `QRIS-${transaction?.invoice_number || 'payment'}.png`;
+      link.target = '_blank';
+      link.click();
+    }
   };
 
   const qrImageUrl = getQrImageUrl();
@@ -203,20 +229,24 @@ export default function InvoiceInteractivePage({
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] text-cyan-400 flex items-center justify-center font-bold animate-pulse">
-        Loading Payment Invoice...
+      <div className="min-h-screen bg-slate-50/60 flex flex-col items-center justify-center font-bold text-indigo-600">
+        <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-indigo-600 border-t-transparent mb-3"></div>
+        <p className="text-xs sm:text-sm font-extrabold">Memuat Invoice Pembayaran...</p>
       </div>
     );
   }
 
   if (!transaction) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] flex flex-col items-center justify-center p-6 text-center text-white">
-        <div className="bg-red-900/20 border border-red-500/50 p-8 rounded-3xl max-w-md shadow-2xl">
-          <h2 className="text-2xl font-bold text-red-400 mb-4">404 - Not Found</h2>
-          <p className="text-gray-300 mb-6">Invoice <strong>{invoiceId}</strong> was not found.</p>
-          <Link href="/" className="bg-white text-black font-bold px-6 py-3 rounded-full hover:bg-cyan-400 transition-colors">
-            Back to Home
+      <div className="min-h-screen bg-slate-50/60 flex flex-col items-center justify-center p-4 text-center">
+        <div className="bg-white border border-gray-100 p-8 rounded-3xl max-w-sm shadow-xl shadow-gray-200/50">
+          <div className="w-12 h-12 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center text-xl mx-auto mb-3">
+            ⚠️
+          </div>
+          <h2 className="text-lg font-black text-gray-900 mb-2">Invoice Tidak Ditemukan</h2>
+          <p className="text-xs text-gray-500 mb-6">Nomor invoice <strong>{invoiceId}</strong> tidak terdaftar di sistem.</p>
+          <Link href="/" className="bg-gradient-to-r from-indigo-600 to-purple-700 text-white font-extrabold px-6 py-2.5 rounded-xl text-xs shadow-md shadow-indigo-600/20 inline-block">
+            Kembali ke Beranda
           </Link>
         </div>
       </div>
@@ -227,48 +257,69 @@ export default function InvoiceInteractivePage({
   const isExpired = timeLeft === 0 && !isPaid;
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white font-sans selection:bg-cyan-500/30 pb-24 relative overflow-hidden">
-      <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-cyan-600/10 blur-[120px] pointer-events-none"></div>
+    <div className="min-h-screen bg-slate-50/60 text-gray-900 font-sans selection:bg-indigo-500/20 pb-24 relative overflow-hidden">
+      
+      {/* Background Soft Glow Aksen Indigo-Purple */}
+      <div className="absolute top-[-5%] left-1/2 -translate-x-1/2 w-[600px] h-[350px] rounded-full bg-gradient-to-b from-indigo-300/20 via-purple-300/10 to-transparent blur-[120px] pointer-events-none"></div>
 
-      <main className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-16">
-        <div className="text-center mb-10">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 mb-4 backdrop-blur-md">
-            <span className={`w-2 h-2 rounded-full ${isPaid ? 'bg-emerald-500' : isExpired ? 'bg-red-500' : 'bg-amber-500 animate-pulse'}`}></span>
-            <span className={`text-xs font-bold tracking-wide uppercase ${isPaid ? 'text-emerald-400' : isExpired ? 'text-red-400' : 'text-amber-400'}`}>
-              Status: {isPaid ? 'Payment Successful (Paid)' : isExpired ? 'Payment Expired' : checkingPayment ? 'Checking QRIS payment...' : 'Awaiting Payment'}
+      <main className="relative max-w-5xl mx-auto px-3 sm:px-6 lg:px-8 pt-6 sm:pt-10">
+        
+        {/* Header Invoice */}
+        <div className="text-center mb-6">
+          <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-[11px] sm:text-xs font-bold uppercase tracking-wide mb-2 ${
+            isPaid 
+              ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
+              : isExpired 
+              ? 'bg-rose-50 text-rose-700 border-rose-200' 
+              : 'bg-amber-50 text-amber-700 border-amber-200'
+          }`}>
+            <span className={`w-2 h-2 rounded-full ${
+              isPaid ? 'bg-emerald-600' : isExpired ? 'bg-rose-600' : 'bg-amber-600 animate-pulse'
+            }`}></span>
+            <span>
+              {isPaid ? 'Pembayaran Berhasil' : isExpired ? 'QRIS Kadaluwarsa' : checkingPayment ? 'Mengecek Pembayaran...' : 'Menunggu Pembayaran'}
             </span>
           </div>
-          <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-2">
-            Invoice {transaction.invoice_number}
+
+          <h1 className="text-xl sm:text-3xl font-black tracking-tight text-gray-900 mb-1">
+            Invoice #{transaction.invoice_number}
           </h1>
-          <p className="text-gray-400">The system automatically monitors your payment status.</p>
+          <p className="text-xs sm:text-sm text-gray-500 font-medium">
+            Sistem mengecek status pembayaran otomatis secara real-time.
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {/* GRID 2 KOLOM (Mobile & PC Selalu 2 Kolom) */}
+        <div className="grid grid-cols-2 gap-3 sm:gap-6 items-start">
 
-          {/* LEFT COLUMN: ORDER DETAILS */}
-          <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-8 rounded-[2rem] shadow-xl flex flex-col justify-between">
+          {/* KOLOM 1: RINCIAN PESANAN */}
+          <div className="bg-white border border-gray-100 p-3.5 sm:p-6 rounded-2xl sm:rounded-3xl shadow-xl shadow-gray-200/50 flex flex-col justify-between">
             <div>
-              <h2 className="text-xl font-bold text-white mb-6 border-b border-white/10 pb-4">Order Details</h2>
+              <h2 className="text-xs sm:text-base font-extrabold text-gray-900 mb-3 pb-2 border-b border-gray-100">
+                Rincian Pesanan
+              </h2>
 
-              <div className="space-y-4">
+              <div className="space-y-2.5 sm:space-y-4">
                 <div>
-                  <p className="text-xs text-gray-500 font-medium mb-1">Product</p>
-                  <p className="text-lg font-bold text-white">{transaction.product_name}</p>
+                  <p className="text-[10px] sm:text-xs text-gray-400 font-medium uppercase tracking-wider">Produk</p>
+                  <p className="text-xs sm:text-base font-extrabold text-gray-900 truncate">{transaction.product_name}</p>
                 </div>
+
                 <div>
-                  <p className="text-xs text-gray-500 font-medium mb-1">Target WhatsApp Number</p>
-                  <p className="text-white font-medium">{transaction.customer_wa}</p>
+                  <p className="text-[10px] sm:text-xs text-gray-400 font-medium uppercase tracking-wider">No. WhatsApp</p>
+                  <p className="text-xs sm:text-sm font-semibold text-gray-800 truncate font-mono">{transaction.customer_wa}</p>
                 </div>
+
                 {kodeUnik !== null && !isPaid && (
                   <div>
-                    <p className="text-xs text-gray-500 font-medium mb-1">Unique Transfer Code</p>
-                    <p className="text-yellow-400 font-bold">+{kodeUnik}</p>
+                    <p className="text-[10px] sm:text-xs text-gray-400 font-medium uppercase tracking-wider">Kode Unik</p>
+                    <p className="text-xs sm:text-sm font-extrabold text-amber-600">+{kodeUnik}</p>
                   </div>
                 )}
-                <div className="pt-4 border-t border-white/10 mt-4">
-                  <p className="text-sm text-gray-400 font-medium mb-1">Total Amount Due</p>
-                  <p className="text-3xl font-black text-cyan-400">
+
+                <div className="pt-2 sm:pt-3 border-t border-gray-100">
+                  <p className="text-[10px] sm:text-xs text-gray-400 font-medium uppercase tracking-wider">Total Tagihan</p>
+                  <p className="text-sm sm:text-2xl font-black text-indigo-700">
                     Rp {Number(transaction.total_price).toLocaleString('id-ID')}
                   </p>
                 </div>
@@ -276,88 +327,109 @@ export default function InvoiceInteractivePage({
             </div>
 
             {isPaid && (
-              <div className="mt-8 pt-6 border-t border-white/10">
+              <div className="mt-4 sm:mt-6 pt-3 border-t border-gray-100">
                 <button
                   onClick={() => router.push(`/cek-pesanan?invoice=${transaction.invoice_number}`)}
-                  className="w-full bg-cyan-500 hover:bg-cyan-400 text-black font-extrabold py-3.5 rounded-xl transition-all shadow-lg shadow-cyan-500/20 text-center block"
+                  className="w-full bg-gradient-to-r from-indigo-600 to-purple-700 hover:opacity-95 text-white font-extrabold py-2.5 sm:py-3.5 rounded-xl text-[11px] sm:text-xs transition-all shadow-md shadow-indigo-600/20 text-center block"
                 >
-                  Check Order Status & Account &rarr;
+                  Cek Akun & Detail &rarr;
                 </button>
               </div>
             )}
           </div>
 
-          {/* RIGHT COLUMN: QRIS / PAID / EXPIRED STATUS */}
-          <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-8 rounded-[2rem] shadow-xl flex flex-col items-center justify-center text-center">
+          {/* KOLOM 2: QRIS / STATUS BAYAR */}
+          <div className="bg-white border border-gray-100 p-3.5 sm:p-6 rounded-2xl sm:rounded-3xl shadow-xl shadow-gray-200/50 flex flex-col items-center justify-center text-center">
             {isPaid ? (
-              <div className="text-emerald-400 flex flex-col items-center py-6">
-                <div className="w-20 h-20 bg-emerald-500/20 rounded-full flex items-center justify-center mb-4 border border-emerald-500/30">
-                  <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="flex flex-col items-center py-2 sm:py-6">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-emerald-50 border border-emerald-100 rounded-2xl flex items-center justify-center mb-3 text-emerald-600">
+                  <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
                   </svg>
                 </div>
-                <h3 className="text-2xl font-bold mb-2 text-white">Payment Successful!</h3>
-                <div className="bg-black/50 border border-emerald-500/30 p-4 rounded-xl font-mono text-sm text-emerald-300 text-left w-full my-4 whitespace-pre-wrap">
-                  {transaction.digital_account_details || 'Your premium account details have been automatically sent to your WhatsApp.'}
-                </div>
+                <h3 className="text-xs sm:text-lg font-extrabold text-gray-900 mb-1">Lunas!</h3>
+                <p className="text-[10px] sm:text-xs text-gray-500 font-medium mb-3">
+                  Detail akun telah dikirimkan otomatis ke WhatsApp Anda.
+                </p>
                 <Link
                   href={`/cek-pesanan?invoice=${transaction.invoice_number}`}
-                  className="text-cyan-400 font-bold hover:underline text-sm"
+                  className="text-indigo-600 font-bold hover:underline text-[11px] sm:text-xs"
                 >
-                  View Order History Details &rarr;
+                  Lihat Detail Akses &rarr;
                 </Link>
               </div>
             ) : isExpired ? (
-              /* EXPIRED STATE */
-              <div className="text-red-400 flex flex-col items-center py-6">
-                <div className="w-20 h-20 bg-red-500/20 rounded-full flex items-center justify-center mb-4 border border-red-500/30">
-                  <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="flex flex-col items-center py-2 sm:py-6">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-rose-50 border border-rose-100 rounded-2xl flex items-center justify-center mb-3 text-rose-600">
+                  <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </div>
-                <h3 className="text-2xl font-bold mb-2 text-white">QRIS Expired</h3>
-                <p className="text-gray-400 text-sm mb-6 max-w-xs">
-                  Batas waktu pembayaran 120 menit telah habis. Silakan lakukan pemesanan ulang.
+                <h3 className="text-xs sm:text-lg font-extrabold text-gray-900 mb-1">QRIS Kadaluwarsa</h3>
+                <p className="text-[10px] sm:text-xs text-gray-500 font-medium mb-4">
+                  Batas waktu pembayaran 120 menit telah habis.
                 </p>
                 <Link
                   href="/"
-                  className="bg-white/10 hover:bg-white/20 text-white font-bold px-6 py-3 rounded-xl transition-all border border-white/20 text-sm"
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold px-4 py-2 rounded-xl text-[11px] sm:text-xs transition-all shadow-sm"
                 >
-                  Order Again
+                  Pesan Ulang
                 </Link>
               </div>
             ) : (
-              /* AWAITING PAYMENT STATE */
               <>
-                <h2 className="text-xl font-bold text-white mb-2">Scan QRIS</h2>
-                <p className="text-gray-400 text-sm mb-4">Scan using any mobile banking or e-wallet app. This page will update automatically upon completion.</p>
-
-                {/* COUNTDOWN TIMER BADGE */}
-                <div className="mb-6 bg-amber-500/10 border border-amber-500/30 px-4 py-2 rounded-2xl flex items-center gap-2">
-                  <span className="text-xs text-amber-400 font-medium">payment deadline:</span>
-                  <span className="font-mono text-base font-extrabold text-amber-300 tracking-wider">
+                {/* WAKTU TENGAT */}
+                <div className="mb-3 bg-amber-50 border border-amber-200 px-2.5 sm:px-3 py-1 rounded-xl flex items-center gap-1.5">
+                  <span className="text-[10px] sm:text-xs text-amber-700 font-bold">Batas:</span>
+                  <span className="font-mono text-xs sm:text-sm font-black text-amber-800 tracking-wider">
                     {formatTimeLeft(timeLeft)}
                   </span>
                 </div>
 
+                {/* QRIS IMAGE */}
                 {qrImageUrl ? (
-                  <div className="bg-white p-4 rounded-3xl shadow-2xl mb-6">
+                  <div className="bg-white p-2 border border-gray-100 rounded-2xl shadow-inner mb-3">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={qrImageUrl}
                       alt="QRIS Payment"
-                      className="w-48 h-48 md:w-56 md:h-56 object-contain"
+                      className="w-28 h-28 sm:w-48 sm:h-48 object-contain mx-auto"
                     />
                   </div>
                 ) : (
-                  <div className="w-56 h-56 bg-white/10 rounded-3xl mb-6 flex items-center justify-center text-gray-500 border border-white/10 text-xs px-4 text-center">
-                    QRIS unavailable or failed to load
+                  <div className="w-28 h-28 sm:w-48 sm:h-48 bg-gray-50 rounded-2xl mb-3 flex items-center justify-center text-gray-400 border border-gray-200 text-[10px] p-2 text-center">
+                    QRIS Tidak Tersedia
                   </div>
                 )}
 
-                <div className="flex items-center gap-2 text-xs text-cyan-400 bg-cyan-500/10 px-4 py-2.5 rounded-xl border border-cyan-500/20 animate-pulse">
-                  <span className="w-2 h-2 rounded-full bg-cyan-400"></span>
-                  Awaiting your scan & payment...
+                {/* TOMBOL AKSI QRIS (PERBESAR & UNDUH) */}
+                {qrImageUrl && (
+                  <div className="flex flex-col sm:flex-row items-center justify-center gap-1.5 w-full mb-3">
+                    <button
+                      onClick={() => setIsModalOpen(true)}
+                      className="w-full sm:w-auto bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-extrabold px-2.5 py-1.5 rounded-lg text-[10px] sm:text-xs transition-all border border-indigo-100 flex items-center justify-center gap-1"
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7" />
+                      </svg>
+                      <span>Perbesar</span>
+                    </button>
+
+                    <button
+                      onClick={handleDownloadQr}
+                      className="w-full sm:w-auto bg-slate-100 hover:bg-slate-200 text-gray-800 font-extrabold px-2.5 py-1.5 rounded-lg text-[10px] sm:text-xs transition-all border border-gray-200 flex items-center justify-center gap-1"
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                      </svg>
+                      <span>Unduh</span>
+                    </button>
+                  </div>
+                )}
+
+                <div className="flex items-center gap-1 text-[10px] sm:text-xs text-indigo-600 font-medium animate-pulse">
+                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-600"></span>
+                  <span>Menunggu pembayaran...</span>
                 </div>
               </>
             )}
@@ -366,6 +438,38 @@ export default function InvoiceInteractivePage({
         </div>
 
       </main>
+
+      {/* MODAL PERBESAR QRIS */}
+      {isModalOpen && qrImageUrl && (
+        <div className="fixed inset-0 z-50 bg-gray-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-6 max-w-xs sm:max-w-sm w-full shadow-2xl relative text-center border border-gray-100">
+            <button
+              onClick={() => setIsModalOpen(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 font-bold text-base bg-gray-100 rounded-full w-7 h-7 flex items-center justify-center"
+            >
+              ✕
+            </button>
+            <h3 className="text-base font-extrabold text-gray-900 mb-1">QRIS Pembayaran</h3>
+            <p className="text-xs text-gray-500 font-medium mb-4">Scan dengan aplikasi M-Banking atau E-Wallet.</p>
+            
+            <div className="bg-white p-3 border border-gray-100 rounded-2xl shadow-inner mb-5 inline-block">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={qrImageUrl} alt="QRIS Large" className="w-56 h-56 sm:w-64 sm:h-64 mx-auto object-contain" />
+            </div>
+
+            <button
+              onClick={handleDownloadQr}
+              className="w-full bg-gradient-to-r from-indigo-600 to-purple-700 hover:opacity-95 text-white font-extrabold py-3 rounded-xl text-xs flex items-center justify-center gap-2 shadow-md shadow-indigo-600/20"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              <span>Unduh Gambar QRIS</span>
+            </button>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
