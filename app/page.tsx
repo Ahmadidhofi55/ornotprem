@@ -202,26 +202,31 @@ export default async function HomePage({
       {/* Background Soft Glow Aksen Indigo-Purple */}
       <div className="absolute top-[-5%] left-1/2 -translate-x-1/2 w-[600px] h-[350px] rounded-full bg-gradient-to-b from-indigo-300/20 via-purple-300/10 to-transparent blur-[120px] pointer-events-none"></div>
 
-      <main className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-24">
+      <main className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-12">
 
         {/* HERO SECTION */}
-        <header className="text-center max-w-4xl mx-auto flex flex-col items-center">
-          <div className="mb-4 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-indigo-100 shadow-sm backdrop-blur-md">
+        <header className="text-center max-w-3xl mx-auto flex flex-col items-center px-4">
+          {/* Badge Tagline Compact */}
+          <div className="mb-3 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-indigo-100 shadow-xs backdrop-blur-md">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-600"></span>
             </span>
-            <span className="text-indigo-700 text-xs font-bold tracking-wide uppercase">
+            <span className="text-indigo-700 text-[11px] sm:text-xs font-bold tracking-wide uppercase">
               Proses Serba Otomatis 24/7
             </span>
           </div>
-          <h1 className="text-4xl sm:text-6xl md:text-7xl font-black tracking-tight text-gray-900 mb-4 sm:mb-6 leading-tight">
-            Satu Tempat untuk Semua <br className="hidden md:block" />
+
+          {/* Judul Utama (Proporsional & Pas di HP & PC) */}
+          <h1 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-gray-900 mb-2 sm:mb-3 leading-snug sm:leading-tight">
+            Satu Tempat untuk Semua <br className="hidden sm:block" />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-800">
               Langganan Premium Bergaransi
             </span>
           </h1>
-          <p className="text-gray-500 text-sm sm:text-base font-medium max-w-2xl">
+
+          {/* Deskripsi Singkat & Ringkas */}
+          <p className="text-gray-500 text-xs sm:text-sm md:text-base font-medium max-w-xl leading-relaxed">
             Dapatkan akses aplikasi premium resmi seperti Netflix, Canva, Spotify, dan Viu dengan harga terjangkau & garansi penuh.
           </p>
         </header>
