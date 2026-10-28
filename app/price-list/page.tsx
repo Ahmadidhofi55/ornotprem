@@ -33,16 +33,6 @@ interface Product {
   icon?: string;
 }
 
-const getConsistentMargin = (brandName: string, minMargin: number, maxMargin: number) => {
-  const diff = maxMargin - minMargin;
-  const steps = diff > 0 ? Math.floor(diff / 100) + 1 : 1;
-  let hash = 0;
-  for (let i = 0; i < brandName.length; i++) {
-    hash = brandName.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  return minMargin + (Math.abs(hash) % steps) * 100;
-};
-
 const CATEGORIES = [
   { id: 'semua', label: 'Semua Produk' },
   { id: 'design-edit', label: 'Design & Edit' },
@@ -74,8 +64,8 @@ export default async function PriceListPage({
   let rawProducts: Product[] = [];
   let debugError = "";
   
-  let minMargin = 500;
-  let maxMargin = 1000;
+  const marginMap: Record<string, number> = {};
+  let defaultMargin = 5000;
 
   try {
     const [premkuRes, supabaseRes] = await Promise.all([
@@ -91,7 +81,6 @@ export default async function PriceListPage({
       supabase
         .from('settings')
         .select('key_name, value')
-        .in('key_name', ['min_margin', 'max_margin'])
     ]);
 
     if (premkuRes.ok) {
@@ -104,22 +93,29 @@ export default async function PriceListPage({
     }
 
     if (supabaseRes.data) {
-      const minData = supabaseRes.data.find((s) => s.key_name === 'min_margin');
-      const maxData = supabaseRes.data.find((s) => s.key_name === 'max_margin');
-      if (minData && !isNaN(Number(minData.value))) minMargin = Number(minData.value);
-      if (maxData && !isNaN(Number(maxData.value))) maxMargin = Number(maxData.value);
+      supabaseRes.data.forEach((s) => {
+        if (s.key_name === 'default_margin') {
+          defaultMargin = Number(s.value) || 0;
+        } else if (s.key_name.startsWith('margin_')) {
+          const productIdKey = s.key_name.replace('margin_', '');
+          marginMap[productIdKey] = Number(s.value) || 0;
+        }
+      });
     }
   } catch (error: unknown) {
     debugError = error instanceof Error ? `Koneksi ke API gagal: ${error.message}` : 'Terjadi kesalahan API';
   }
 
+  // Menghitung harga jual resmi berdasarkan margin presisi Supabase
   const processedProducts = rawProducts.map(product => {
-    const brandName = product.name ? product.name.split(' ')[0] : 'Lainnya';
+    const brandName = product.name ? product.name.trim().split(' ')[0] : 'Lainnya';
     const slug = brandName.toLowerCase();
-    const margin = getConsistentMargin(slug, minMargin, maxMargin);
-    const finalPrice = (Number(product.price) || 0) + margin;
+    const productId = String(product.id);
+    const basePrice = Number(product.price) || 0;
+    const margin = marginMap[productId] !== undefined ? marginMap[productId] : defaultMargin;
+    const finalPrice = basePrice + margin;
 
-    return { ...product, brandName, slug, finalPrice };
+    return { ...product, brandName, slug, basePrice, margin, finalPrice };
   });
 
   const filteredProducts = processedProducts.filter(p => {
