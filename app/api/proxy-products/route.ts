@@ -1,20 +1,29 @@
-// app/api/proxy-products/route.ts
 import { NextResponse } from 'next/server';
+
+// Whitelist endpoint yang diizinkan untuk proxy demi keamanan
+const ALLOWED_ENDPOINTS = ['products', 'order', 'profile', 'status'];
 
 export async function POST(request: Request) {
   try {
     const { endpoint, bodyData } = await request.json();
-    
-    const premkuUrl = `https://premku.com/api/${endpoint}`;
 
-    // Ambil API Key dari server-side env (aman dari client/browser)
+    if (!endpoint || !ALLOWED_ENDPOINTS.includes(endpoint)) {
+      return NextResponse.json(
+        { success: false, message: 'Endpoint tidak diizinkan atau tidak valid.' },
+        { status: 400 }
+      );
+    }
+
+    const premkuUrl = `https://premku.com/api/${endpoint}`;
     const serverApiKey = process.env.PREMKU_API_KEY;
 
     if (!serverApiKey) {
-      return NextResponse.json({ success: false, message: 'Server API Key not configured.' }, { status: 500 });
+      return NextResponse.json(
+        { success: false, message: 'Server API Key not configured.' },
+        { status: 500 }
+      );
     }
 
-    // Gabungkan body data dengan api_key dari server
     const finalBodyData = {
       ...bodyData,
       api_key: serverApiKey,
@@ -22,13 +31,18 @@ export async function POST(request: Request) {
 
     const response = await fetch(premkuUrl, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': serverApiKey,
+      },
       body: JSON.stringify(finalBodyData),
+      cache: 'no-store',
     });
 
     const data = await response.json();
-    return NextResponse.json(data);
-  } catch (error: any) {
-    return NextResponse.json({ success: false, message: error.message }, { status: 500 });
+    return NextResponse.json(data, { status: response.status });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'An unknown error occurred';
+    return NextResponse.json({ success: false, message }, { status: 500 });
   }
 }

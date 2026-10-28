@@ -1,7 +1,7 @@
 // app/dashboard/orders/page.tsx
 "use client";
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
 
@@ -23,7 +23,9 @@ interface UserData {
 interface PremkuProduct {
   id: number;
   name: string;
-  price: number;
+  price: number;      // Harga Jual Final (Base Price + Margin) dari /api/products
+  base_price: number; // Harga Modal asli dari API Premku
+  margin: number;     // Profit Margin dari Supabase settings
   status: string;
   stock: number;
 }
@@ -35,26 +37,11 @@ export default function NewOrderPage() {
   const [selectedProductId, setSelectedProductId] = useState<string>('');
   const [qty, setQty] = useState<number>(1);
   const [customerWa, setCustomerWa] = useState('');
-  
-  const [minMargin, setMinMargin] = useState<number>(500); 
-  const [maxMargin, setMaxMargin] = useState<number>(1000); 
 
   const [isLoadingProducts, setIsLoadingProducts] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
-
-  const getConsistentMargin = (productName: string, min: number, max: number) => {
-    const diff = max - min;
-    const steps = diff > 0 ? Math.floor(diff / 100) + 1 : 1;
-    
-    let hash = 0;
-    for (let i = 0; i < productName.length; i++) {
-      hash = productName.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    
-    return min + (Math.abs(hash) % steps) * 100;
-  };
 
   useEffect(() => {
     const initData = async () => {
@@ -63,31 +50,24 @@ export default function NewOrderPage() {
       const session = JSON.parse(sessionStr);
 
       try {
-        const [userRes, settingsRes] = await Promise.all([
+        const [userRes, prodRes] = await Promise.all([
           supabase.from('users').select('id, balance').eq('id', session.id).single(),
-          supabase.from('settings').select('key_name, value').in('key_name', ['min_margin', 'max_margin'])
+          fetch('/api/products', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+          })
         ]);
 
         if (userRes.data) setUser(userRes.data);
 
-        if (settingsRes.data) {
-          settingsRes.data.forEach((item) => {
-            if (item.key_name === 'min_margin' && !isNaN(Number(item.value))) setMinMargin(Number(item.value));
-            if (item.key_name === 'max_margin' && !isNaN(Number(item.value))) setMaxMargin(Number(item.value));
-          });
-        }
-
-        const res = await fetch('/api/products', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-        });
-        
-        const result = await res.json();
+        const result = await prodRes.json();
         
         let rawProducts: PremkuProduct[] = [];
-        if (Array.isArray(result)) rawProducts = result;
-        else if (result && Array.isArray(result.data)) rawProducts = result.data;
-        else if (result && Array.isArray(result.products)) rawProducts = result.products;
+        if (result?.data && Array.isArray(result.data)) {
+          rawProducts = result.data;
+        } else if (Array.isArray(result)) {
+          rawProducts = result;
+        }
 
         setProducts(rawProducts);
       } catch (err) {
@@ -103,13 +83,8 @@ export default function NewOrderPage() {
 
   const currentProduct = products.find(p => p.id === Number(selectedProductId));
   
-  const randomMarginApplied = useMemo(() => {
-    if (!currentProduct) return 0;
-    const brandName = currentProduct.name ? currentProduct.name.split(' ')[0] : 'Lainnya';
-    return getConsistentMargin(brandName, minMargin, maxMargin);
-  }, [currentProduct, minMargin, maxMargin]);
-
-  const finalPricePerItem = currentProduct ? (Number(currentProduct.price) || 0) + randomMarginApplied : 0;
+  // Menggunakan harga final langsung dari API (Tanpa Penjumlahan Margin Ulang)
+  const finalPricePerItem = currentProduct ? Number(currentProduct.price) || 0 : 0;
   const totalPrice = finalPricePerItem * qty;
   const isOutOfStock = currentProduct ? (currentProduct.stock <= 0 || currentProduct.status === 'unavailable') : false;
   
@@ -159,9 +134,8 @@ export default function NewOrderPage() {
         throw new Error(premkuData.error || premkuData.message || 'Gagal memproses pesanan ke server pusat.');
       }
 
-      const totalProfitEarned = randomMarginApplied * qty;
+      const totalProfitEarned = (currentProduct.margin || 0) * qty;
       const invoiceToUse = premkuData.data?.invoice || premkuData.invoice || uniqueRefId;
-      
       const accountDetails = premkuData.data?.accounts || premkuData.accounts || null;
       const apiLogStr = JSON.stringify(premkuData);
 
@@ -171,7 +145,7 @@ export default function NewOrderPage() {
         api_product_id: String(currentProduct.id),
         product_name: currentProduct.name,
         customer_wa: customerWa,
-        base_price: currentProduct.price,
+        base_price: currentProduct.base_price,
         margin: totalProfitEarned,
         total_price: totalPrice,
         payment_channel: 'BALANCE',

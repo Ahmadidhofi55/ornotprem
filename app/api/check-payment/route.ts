@@ -40,8 +40,13 @@ export async function POST(request: Request) {
     // 2. Cek status deposit jika belum PAID
     if (!isPaid) {
       const premkuDepositId = extractPremkuDepositId(tx.api_response_log);
+      
       if (!premkuDepositId) {
-        return NextResponse.json({ success: false, message: 'ID deposit Premku not found in the log' }, { status: 400 });
+        return NextResponse.json({ 
+          success: false, 
+          status: 'UNPAID',
+          message: 'ID deposit Premku tidak ditemukan di log transaksi.' 
+        }, { status: 200 });
       }
 
       isPaid = await checkDepositStatus(premkuDepositId);
@@ -50,8 +55,8 @@ export async function POST(request: Request) {
         return NextResponse.json({
           success: false,
           status: 'UNPAID',
-          message: 'Deposit has not been confirmed paid off in Premku yet. Please wait for the payment confirmation.'
-        });
+          message: 'Deposit belum terkonfirmasi lunas di Premku.'
+        }, { status: 200 });
       }
     }
 
@@ -85,23 +90,22 @@ export async function POST(request: Request) {
       }
     }
 
-    // 4. Hitung Margin/Profit otomatis (Total Jual - Harga Modal/Base Cost)
+    // 4. Hitung Margin otomatis (Total Jual - Harga Modal/Base Cost)
     const totalPrice = Number(tx.total_price) || 0;
     const baseCostPrice = Number(tx.base_cost_price || tx.cost_price || 0);
     
-    // Margin cuma dihitung/diisi kalo pengiriman akun udah SUCCESS
-    const calculatedProfit = deliveryStatus === 'SUCCESS' 
+    const calculatedMargin = deliveryStatus === 'SUCCESS' 
       ? Math.max(0, totalPrice - baseCostPrice) 
-      : (Number(tx.profit) || 0);
+      : (Number(tx.margin) || 0);
 
-    // 5. Update status, detail akun, dan profit ke Supabase
+    // 5. Update status, detail akun, dan kolom margin ke Supabase
     const { data: updatedTx, error: updateErr } = await supabase
       .from('transactions')
       .update({
         payment_status: 'PAID',
         delivery_status: deliveryStatus,
         digital_account_details: accountDetails,
-        profit: calculatedProfit, // Mengisi kolom profit/margin otomatis
+        margin: calculatedMargin, // Mengisi kolom 'margin'
         updated_at: new Date().toISOString()
       })
       .eq('id', tx.id)

@@ -3,7 +3,6 @@
 
 import { useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import Link from 'next/link';
 
 function CheckoutForm() {
   const searchParams = useSearchParams();
@@ -12,6 +11,8 @@ function CheckoutForm() {
   const productId = searchParams.get('id');
   const productName = searchParams.get('name') || 'Produk Digital';
   const displayPrice = searchParams.get('price') ? Number(searchParams.get('price')) : 0;
+  const basePrice = searchParams.get('basePrice') ? Number(searchParams.get('basePrice')) : 0;
+  const margin = searchParams.get('margin') ? Number(searchParams.get('margin')) : 0;
   
   const rawImage = searchParams.get('image') || searchParams.get('icon') || searchParams.get('thumbnail') || searchParams.get('img');
   const productImage = rawImage && rawImage !== 'null' && rawImage !== 'undefined' && rawImage !== 'None'
@@ -50,6 +51,8 @@ function CheckoutForm() {
           productId,
           productName,
           price: displayPrice,
+          basePrice,
+          margin,
           customerWa: cleanWa,
           customerEmail: email.trim(),
           paymentChannel,
@@ -316,4 +319,4 @@ export default function CheckoutPage() {
       </main>
     </div>
   );
-}
+} 
