@@ -156,7 +156,8 @@ export default async function InvoicePage({
 
     if (premkuDepositId) {
       try {
-        const depositStatusResult = await checkDepositStatus(premkuDepositId);
+        // SOLUSI FIX TS2339: Berikan tipe 'any' untuk hasil eksekusi API Premku
+        const depositStatusResult: any = await checkDepositStatus(premkuDepositId);
         depositIsPaid = typeof depositStatusResult === 'boolean' 
           ? depositStatusResult 
           : Boolean(depositStatusResult?.isPaid);
@@ -328,7 +329,7 @@ export default async function InvoicePage({
                     ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 animate-pulse'
                     : 'bg-rose-500/20 text-rose-300 border-rose-500/40'
               }`}>
-                {isPaid ? '🟢 Paid' : isPending ? '🟡 Waiting' : '🔴 Expired'}
+                {isPaid ? '🟢 Lunas' : isPending ? '🟡 Waiting' : '🔴 Expired'}
               </span>
             </div>
           </div>
@@ -397,7 +398,6 @@ export default async function InvoicePage({
             {isPending && (
               <div className="bg-indigo-50/60 border border-indigo-100 rounded-xl sm:rounded-2xl p-4 text-center space-y-3">
                 
-                {/* AUTO-CHECKER CLIENT SCRIPT TANPA FILE KOMPONEN BARU */}
                 <script
                   dangerouslySetInnerHTML={{
                     __html: `
@@ -561,7 +561,7 @@ export default async function InvoicePage({
             {/* TOMBOL CS WHATSAPP & BERANDA */}
             <div className="pt-2 flex flex-col gap-2">
               <a 
-                href={`https://wa.me/62895402137562?text=${encodeURIComponent(`Halo Admin Ornot Prem, saya ingin bertanya tentang Invoice #${transaction.invoice_number}`)}`}
+                href={`https://wa.me/6281234567890?text=${encodeURIComponent(`Halo Admin Ornot Prem, saya ingin bertanya tentang Invoice #${transaction.invoice_number}`)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-2.5 rounded-xl text-xs text-center transition-colors shadow-sm flex items-center justify-center gap-1.5"
